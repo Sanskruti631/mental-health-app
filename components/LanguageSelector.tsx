@@ -1,5 +1,8 @@
+"use client";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import "@/lib/i18n";
+
 
 interface LanguageSelectorProps {
   onSelect: () => void;

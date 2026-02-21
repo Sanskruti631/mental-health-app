@@ -1,9 +1,9 @@
+
 import type React from "react";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
-
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description:
     "Comprehensive mental health and psychological support system for higher education students",
 };
-
+import "@/lib/i18n";
 export default function RootLayout({
   children,
 }: {
