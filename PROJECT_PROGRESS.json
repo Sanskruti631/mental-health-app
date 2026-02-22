@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-22T00:00:00Z",
+    "project_root": "c:\\TY Project\\mental-health-app-main"
+  },
+  "project": {
+    "name": "MindCare",
+    "aliases": ["SoulSupport"],
+    "type": "nextjs-app-router",
+    "version": "0.1.0",
+    "frameworks": ["Next.js 16", "React 18", "TypeScript", "Tailwind CSS 4", "Radix UI", "Framer Motion"]
+  },
+  "architecture": {
+    "frontend": {
+      "app_router": true,
+      "pages_count": 27,
+      "styles": ["Tailwind CSS 4", "geist"],
+      "state_management": ["React Context (AuthContext)"]
+    },
+    "backend": {
+      "api_routes": true,
+      "database": "planned-postgresql",
+      "llm_integration": false
+    }
+  },
+  "progress_summary": {
+    "ui": {
+      "status": "complete",
+      "progress_pct": 90,
+      "notes": "Polished UI across 20+ pages and dashboards"
+    },
+    "authentication": {
+      "status": "partial",
+      "progress_pct": 50,
+      "notes": "Role-based auth with localStorage mock; protected routes via middleware/context"
+    },
+    "api": {
+      "status": "partial",
+      "progress_pct": 30,
+      "notes": "Next.js API routes for auth, questionnaire scoring, and rule-based risk prediction"
+    },
+    "database": {
+      "status": "planned",
+      "progress_pct": 10,
+      "notes": "Schema outlined; connection and persistence not implemented"
+    },
+    "ai_chatbot": {
+      "status": "not_started",
+      "progress_pct": 0,
+      "notes": "Current chatbot is keyword/rule-based without LLM or memory"
+    },
+    "risk_prediction": {
+      "status": "baseline_rule_based",
+      "progress_pct": 20,
+      "notes": "Deterministic risk mapping using PHQ-9/GAD-7/GHQ-12 + behavior signals"
+    },
+    "questionnaire_scoring": {
+      "status": "complete",
+      "progress_pct": 80,
+      "notes": "Weighted scoring with risk mapping; API endpoint implemented"
+    }
+  },
+  "key_features": {
+    "dashboards": ["student", "admin", "counsellor", "therapist"],
+    "assessments": ["PHQ-9", "GAD-7", "GHQ-12"],
+    "tools": ["Mood Tracker", "Appointments", "Community", "Resource Hub", "Games", "Quiz"]
+  },
+  "api_endpoints": [
+    {"path": "/api/auth/login", "file": "app/api/auth/login/route.ts", "status": "mock"},
+    {"path": "/api/auth/register", "file": "app/api/auth/register/route.ts", "status": "mock"},
+    {"path": "/api/auth/session", "file": "app/api/auth/session/route.ts", "status": "mock"},
+    {"path": "/api/auth/reset-password/[token]", "file": "app/api/auth/reser-password/[token]/route.ts", "status": "mock"},
+    {"path": "/api/questionnaire/submit", "file": "app/api/questionnaire/submit/route.ts", "status": "implemented"},
+    {"path": "/api/predict", "file": "app/api/predict/route.ts", "status": "implemented"}
+  ],
+  "pages": [
+    "account","appointments","auth-success","chat","community/[topic]","contact",
+    "dashboard","dashboard/admin","dashboard/counsellor","dashboard/student",
+    "forgot-password","games","help","landing page","login","mood-tracker",
+    "privacy","profile","profile-completion","quiz","register","resetPassword/[token]",
+    "settings","terms","therapist-dashboard","user-home","wellness"
+  ],
+  "key_files": {
+    "auth_context": "contexts/auth-context.tsx",
+    "auth_service": "lib/auth.ts",
+    "auth_utils": "lib/auth-utils.ts",
+    "risk_features": "lib/ai/mentalHealthFeatures.ts",
+    "risk_prediction": "lib/ai/predictRisk.ts",
+    "questionnaire_types": "lib/questionnaire/types.ts",
+    "questionnaire_questions": "lib/questionnaire/questions.ts",
+    "questionnaire_scoring": "lib/questionnaire/scoreQuestionnaire.ts",
+    "database_schema": "lib/database.ts",
+    "i18n": "lib/i18n.ts",
+    "ui_components": "components/ui/*",
+    "chat_component": "components/chat-interface.tsx"
+  },
+  "limitations": [
+    "No persistent database; relies on localStorage",
+    "No backend integration for real authentication",
+    "No LLM integration; chatbot is rule-based",
+    "No conversation memory or personalization",
+    "No real-time streaming or notifications"
+  ],
+  "next_steps": [
+    "Implement PostgreSQL and connect database.ts",
+    "Build API endpoints: /api/chat, /api/analysis, /api/questionnaire/generate",
+    "Integrate LLM for chat with streaming and memory",
+    "Persist conversations and assessment results",
+    "Add role-based server-side authorization and sessions"
+  ]
+}
