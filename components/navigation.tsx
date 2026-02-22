@@ -34,7 +34,8 @@ export function Navigation() {
       case "student":
         return [
           { name: "AI chatbot", href: "/chat", icon: MessageCircle },
-          { name: "Book Appointment", href: "/appointments", icon: Calendar }
+          { name: "Book Appointment", href: "/appointments", icon: Calendar },
+          { name: "Resources", href: "/resources", icon: BookOpen },
         ] 
           
         

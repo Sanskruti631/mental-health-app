@@ -100,6 +100,11 @@ export const authService = {
       throw new Error("Invalid credentials")
     }
 
+    // Store password so it can be verified during change-password flow
+    if (!localStorage.getItem(`password_${user.id}`)) {
+      localStorage.setItem(`password_${user.id}`, credentials.password)
+    }
+
     // Store in localStorage (in a real app, you'd use secure tokens)
     localStorage.setItem("auth_token", JSON.stringify(user))
     console.log("Saved user:", user)
@@ -134,6 +139,9 @@ export const authService = {
       newUser.isVerified = false // Therapists need verification
     }
 
+    // Store password so it can be verified during change-password flow
+    localStorage.setItem(`password_${newUser.id}`, data.password)
+
     // Store in localStorage
     localStorage.setItem("auth_token", JSON.stringify(newUser))
     return newUser
@@ -162,6 +170,22 @@ export const authService = {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     console.log("Password reset email sent to:", email)
+  },
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const storedPassword = localStorage.getItem(`password_${userId}`)
+    // If no stored password, use a default mock password for demo purposes
+    const actualPassword = storedPassword || "password123"
+
+    if (currentPassword !== actualPassword) {
+      throw new Error("Current password is incorrect")
+    }
+
+    // In a real app, you'd hash and store the new password on the server
+    localStorage.setItem(`password_${userId}`, newPassword)
   },
 
   async updateProfile(userId: string, updates: Partial<User>): Promise<User> {

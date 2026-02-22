@@ -43,7 +43,7 @@ export function Footer() {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>Crisis Helpline: 1800-599-0019-SOULSUPPORT</span>
+                <span>Crisis Helpline : 18008914413</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />

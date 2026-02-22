@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Check,
   Circle,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -133,11 +134,11 @@ export default function QuizWithSidebarPage() {
 
             <li>
               <Link
-                href="/account"
+                href="/resources"
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
               >
-                <User className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium">Account</span>
+                <BookOpen className="w-5 h-5 text-emerald-600" />
+                <span className="font-medium">Resources</span>
               </Link>
             </li>
 

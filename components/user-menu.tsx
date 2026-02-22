@@ -118,9 +118,9 @@ export function UserMenu() {
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center">
+          <Link href="/settings" className="flex items-center">
             <User className="h-4 w-4" />
-            <span className="ml-2">Profile</span>
+            <span className="ml-2">Account</span>
           </Link>
         </DropdownMenuItem>
 

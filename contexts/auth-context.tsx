@@ -10,6 +10,7 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -123,6 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!state.user) throw new Error("No user logged in")
+
+    await authService.changePassword(state.user.id, currentPassword, newPassword)
+  }
+
   const value: AuthContextType = {
     ...state,
     login,
@@ -130,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     resetPassword,
     updateProfile,
+    changePassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -61,7 +61,7 @@ export function FeaturesSection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
                   <Headphones className="h-5 w-5 mr-2" />
-                  Crisis Helpline
+                  Crisis Helpline : 18008914413
                 </Button>
                 <Button
                   size="lg"

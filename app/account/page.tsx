@@ -8,14 +8,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
 export default function AccountPage() {
   const router = useRouter()
-  const { user, isLoading, isAuthenticated, logout, updateProfile } = useAuth()
+  const { user, isLoading, isAuthenticated, logout, updateProfile, changePassword } = useAuth()
 
   const [name, setName] = useState("")
   const [photo, setPhoto] = useState<string | null>(null)
-  const [password, setPassword] = useState("")
+
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmNewPassword, setConfirmNewPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("")
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -43,7 +57,43 @@ export default function AccountPage() {
   }
 
   const handlePasswordChange = async () => {
-    alert("Password change feature coming soon 🔐")
+    setPasswordError("")
+    setPasswordSuccess("")
+
+    if (!currentPassword) {
+      setPasswordError("Please enter your current password.")
+      return
+    }
+    if (!newPassword) {
+      setPasswordError("Please enter a new password.")
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters.")
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("New passwords do not match.")
+      return
+    }
+
+    setIsChangingPassword(true)
+    try {
+      await changePassword(currentPassword, newPassword)
+      setPasswordSuccess("Password changed successfully.")
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmNewPassword("")
+      setTimeout(() => {
+        setPasswordDialogOpen(false)
+        setPasswordSuccess("")
+      }, 1500)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to change password."
+      setPasswordError(message)
+    } finally {
+      setIsChangingPassword(false)
+    }
   }
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +140,6 @@ export default function AccountPage() {
           {/* User Info */}
           <div className="bg-muted/40 p-4 rounded-xl text-sm space-y-1">
             <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Role:</strong> {user.role}</p>
           </div>
 
           {/* Edit Name */}
@@ -103,21 +152,80 @@ export default function AccountPage() {
           </div>
 
           {/* Change Password */}
-          <div className="space-y-3">
-            <Label>New Password</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <div>
             <Button
               variant="outline"
               className="w-full"
-              onClick={handlePasswordChange}
+              onClick={() => {
+                setPasswordError("")
+                setPasswordSuccess("")
+                setCurrentPassword("")
+                setNewPassword("")
+                setConfirmNewPassword("")
+                setPasswordDialogOpen(true)
+              }}
             >
               Change Password
             </Button>
           </div>
+
+          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Change Password</DialogTitle>
+                <DialogDescription>
+                  Enter your current password and choose a new one.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="current-password">Current Password</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    placeholder="Enter current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-password">Re-enter New Password</Label>
+                  <Input
+                    id="confirm-new-password"
+                    type="password"
+                    placeholder="Re-enter new password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  />
+                </div>
+
+                {passwordError && (
+                  <p className="text-sm text-red-600">{passwordError}</p>
+                )}
+                {passwordSuccess && (
+                  <p className="text-sm text-emerald-600">{passwordSuccess}</p>
+                )}
+
+                <Button
+                  className="w-full"
+                  onClick={handlePasswordChange}
+                  disabled={isChangingPassword}
+                >
+                  {isChangingPassword ? "Changing..." : "Update Password"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Role UI */}
           {user.role === "admin" ? (
