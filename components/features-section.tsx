@@ -11,14 +11,54 @@ export function FeaturesSection() {
     description: string;
     href: string;
   }> = [
-    // Add your custom features here
+    {
+      icon: MessageCircle,
+      title: "AI-Powered Chat Support",
+      description: "Get instant, confidential mental health guidance from our intelligent chatbot trained to help with stress, anxiety, and more.",
+      href: "/chat",
+    },
+    {
+      icon: Calendar,
+      title: "Book Counseling Sessions",
+      description: "Schedule appointments with verified therapists and counselors who specialize in student mental health.",
+      href: "/appointments",
+    },
+    {
+      icon: BookOpen,
+      title: "Self-Help Resources",
+      description: "Access curated articles, guided exercises, and evidence-based techniques for managing your mental wellbeing.",
+      href: "/resources",
+    },
+    {
+      icon: Brain,
+      title: "Mental Health Assessments",
+      description: "Take clinically validated questionnaires like PHQ-9 and GAD-7 to better understand your mental health.",
+      href: "/quiz",
+    },
+    {
+      icon: Users,
+      title: "Peer Community",
+      description: "Connect anonymously with fellow students in moderated support groups and shared-experience forums.",
+      href: "/community",
+    },
+    {
+      icon: BarChart3,
+      title: "Mood & Progress Tracking",
+      description: "Monitor your emotional wellbeing over time with visual insights and personalized recommendations.",
+      href: "/mood-tracker",
+    },
   ]
 
   return (
     <section className="py-20 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-balance mb-4">
+            Everything You Need for Better Mental Health
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
+            From AI-powered support to professional counseling, we provide comprehensive tools designed specifically for students.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

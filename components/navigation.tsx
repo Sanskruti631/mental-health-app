@@ -10,46 +10,38 @@ import { useTranslation } from "react-i18next";
 
 
 export function Navigation() {
-  const { i18n } = useTranslation();
-  <select
-  value={i18n.language}
-  onChange={(e) => i18n.changeLanguage(e.target.value)}
->
-  <option value="en">EN</option>
-  <option value="hi">HI</option>
-</select>
-
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false)
   const { user, isAuthenticated } = useAuth()
 
   const getNavItems = () => {
     if (!user) {
       return [
-        { name: "Features", href: "/#features", icon: Heart },
-        { name: "About", href: "/#about", icon: Users },
+        { name: t("navFeatures"), href: "/#features", icon: Heart },
+        { name: t("navAbout"), href: "/#about", icon: Users },
       ]
     }
 
     switch (user.role) {
       case "student":
         return [
-          { name: "AI chatbot", href: "/chat", icon: MessageCircle },
-          { name: "Book Appointment", href: "/appointments", icon: Calendar },
-          { name: "Resources", href: "/resources", icon: BookOpen },
+          { name: t("navAiChatbot"), href: "/chat", icon: MessageCircle },
+          { name: t("navBookAppointment"), href: "/appointments", icon: Calendar },
+          { name: t("navResources"), href: "/resources", icon: BookOpen },
         ] 
           
         
       case "admin":
         return [
-          { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
-          { name: "User Management", href: "/admin/users", icon: Users },
-          { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+          { name: t("navDashboard"), href: "/dashboard", icon: BarChart3 },
+          { name: t("navUserManagement"), href: "/admin/users", icon: Users },
+          { name: t("navAnalytics"), href: "/admin/analytics", icon: BarChart3 },
         ]
       case "therapist":
         return [
-          { name: "Dashboard", href: "/therapist-dashboard", icon: Stethoscope },
-          { name: "Appointments", href: "/therapist/appointments", icon: Calendar },
-          { name: "Messages", href: "/therapist/messages", icon: MessageCircle },
+          { name: t("navDashboard"), href: "/therapist-dashboard", icon: Stethoscope },
+          { name: t("navAppointments"), href: "/therapist/appointments", icon: Calendar },
+          { name: t("navMessages"), href: "/therapist/messages", icon: MessageCircle },
         ]
       default:
         return []
@@ -86,6 +78,16 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Language Switcher */}
+            <select
+              value={i18n.language}
+              onChange={(e) => i18n.changeLanguage(e.target.value)}
+              className="bg-transparent border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="en">EN</option>
+              <option value="mr">MR</option>
+              <option value="hi">HI</option>
+            </select>
             {isAuthenticated ? (
               <UserMenu />
             ) : (
@@ -139,6 +141,18 @@ export function Navigation() {
                   </>
                 )}
                 
+                {/* Mobile Language Switcher */}
+                <div className="pt-2 border-t border-border">
+                  <select
+                    value={i18n.language}
+                    onChange={(e) => i18n.changeLanguage(e.target.value)}
+                    className="w-full bg-transparent border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="en">English</option>
+                    <option value="mr">मराठी</option>
+                    <option value="hi">हिंदी</option>
+                  </select>
+                </div>
 
               </div>
             </div>
