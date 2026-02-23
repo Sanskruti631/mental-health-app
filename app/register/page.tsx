@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Heart, Eye, EyeOff } from "lucide-react"
+import { useTranslation } from "react-i18next";
 
 export default function RegisterPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { t } = useTranslation();
 
   return (
     <div
@@ -117,13 +119,14 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <div className="text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/login" className="text-primary hover:underline">
-                  Sign in
-                </Link>
-              </div>
-            </div>
+  <div className="text-sm text-muted-foreground">
+    {t("AlreadyHaveAccount")}{" "}
+    <Link href="/login" className="text-primary hover:underline">
+      {t("SignIn")}
+    </Link>
+  </div>
+</div>
+
 
           </CardContent>
         </Card>

@@ -1,54 +1,64 @@
-"use client"
+"use client";
+
 import "@/lib/i18n";
-import { useState } from "react"
-import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
-import { UserMenu } from "@/components/user-menu"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Heart, MessageCircle, Calendar, BookOpen, Users, BarChart3, Stethoscope } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
+import { UserMenu } from "@/components/user-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  X,
+  Heart,
+  MessageCircle,
+  Calendar,
+  Users,
+  BarChart3,
+  Stethoscope,
+} from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switche";
 import { useTranslation } from "react-i18next";
 
-
 export function Navigation() {
-  const { t, i18n } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false)
-  const { user, isAuthenticated } = useAuth()
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation(); 
 
   const getNavItems = () => {
     if (!user) {
       return [
-        { name: t("navFeatures"), href: "/#features", icon: Heart },
-        { name: t("navAbout"), href: "/#about", icon: Users },
-      ]
+        { name: t("Features"), href: "/#features", icon: Heart },
+        { name: t("About"), href: "/#about", icon: Users },
+      ];
     }
 
     switch (user.role) {
       case "student":
         return [
-          { name: t("navAiChatbot"), href: "/chat", icon: MessageCircle },
-          { name: t("navBookAppointment"), href: "/appointments", icon: Calendar },
-          { name: t("navResources"), href: "/resources", icon: BookOpen },
-        ] 
-          
-        
+          { name: t("AiChatbot"), href: "/chat", icon: MessageCircle },
+          { name: t("BookAppointment"), href: "/appointments", icon: Calendar },
+        ];
+
       case "admin":
         return [
-          { name: t("navDashboard"), href: "/dashboard", icon: BarChart3 },
-          { name: t("navUserManagement"), href: "/admin/users", icon: Users },
-          { name: t("navAnalytics"), href: "/admin/analytics", icon: BarChart3 },
-        ]
+          { name: t("Dashboard"), href: "/dashboard", icon: BarChart3 },
+          { name: t("UserManagement"), href: "/admin/users", icon: Users },
+          { name: t("Analytics"), href: "/admin/analytics", icon: BarChart3 },
+        ];
+
       case "therapist":
         return [
-          { name: t("navDashboard"), href: "/therapist-dashboard", icon: Stethoscope },
-          { name: t("navAppointments"), href: "/therapist/appointments", icon: Calendar },
-          { name: t("navMessages"), href: "/therapist/messages", icon: MessageCircle },
-        ]
-      default:
-        return []
-    }
-  }
+          { name: t("Dashboard"), href: "/therapist-dashboard", icon: Stethoscope },
+          { name: t("Appointments"), href: "/therapist/appointments", icon: Calendar },
+          { name: t("Messages"), href: "/therapist/messages", icon: MessageCircle },
+        ];
 
-  const navItems = getNavItems()
+      default:
+        return [];
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b border-border">
@@ -59,7 +69,9 @@ export function Navigation() {
             <div className="bg-primary rounded-lg p-2">
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">SoulSupport</span>
+            <span className="text-xl font-bold text-foreground">
+              SoulSupport
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -76,36 +88,38 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
+          {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Language Switcher */}
-            <select
-              value={i18n.language}
-              onChange={(e) => i18n.changeLanguage(e.target.value)}
-              className="bg-transparent border border-border rounded-md px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="en">EN</option>
-              <option value="mr">MR</option>
-              <option value="hi">HI</option>
-            </select>
+            <LanguageSwitcher />
+
             {isAuthenticated ? (
               <UserMenu />
             ) : (
               <>
                 <Button variant="outline" asChild>
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">{t("Login")}</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register">Sign Up</Link>
+                  <Link href="/register">{t("Signup")}</Link>
                 </Button>
               </>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {/* Mobile */}
+          <div className="md:hidden flex items-center gap-2">
+            <LanguageSwitcher />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
@@ -125,6 +139,7 @@ export function Navigation() {
                   <span>{item.name}</span>
                 </Link>
               ))}
+
               <div className="pt-4 space-y-2">
                 {isAuthenticated ? (
                   <div className="px-3 py-2">
@@ -132,33 +147,23 @@ export function Navigation() {
                   </div>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full bg-transparent" asChild>
-                      <Link href="/login">Login</Link>
+                    <Button
+                      variant="outline"
+                      className="w-full bg-transparent"
+                      asChild
+                    >
+                      <Link href="/login">{t("navLogin")}</Link>
                     </Button>
                     <Button className="w-full" asChild>
-                      <Link href="/register">Sign Up</Link>
+                      <Link href="/register">{t("navSignup")}</Link>
                     </Button>
                   </>
                 )}
-                
-                {/* Mobile Language Switcher */}
-                <div className="pt-2 border-t border-border">
-                  <select
-                    value={i18n.language}
-                    onChange={(e) => i18n.changeLanguage(e.target.value)}
-                    className="w-full bg-transparent border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="en">English</option>
-                    <option value="mr">मराठी</option>
-                    <option value="hi">हिंदी</option>
-                  </select>
-                </div>
-
               </div>
             </div>
           </div>
         )}
       </div>
     </nav>
-  )
+  );
 }
