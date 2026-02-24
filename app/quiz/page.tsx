@@ -155,9 +155,11 @@ export default function QuizWithSidebarPage() {
         </nav>
 
         <div className="mt-auto">
-          <Button variant="ghost" className="w-full">
-            <Home className="w-4 h-4 mr-2" />
-            Home
+          <Button variant="ghost" className="w-full" asChild>
+            <Link href="/" className="w-full flex items-center justify-center">
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Link>
           </Button>
         </div>
       </aside>

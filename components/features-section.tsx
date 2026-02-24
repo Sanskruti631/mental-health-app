@@ -66,12 +66,13 @@ export function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => (
             <Card
-              key={index}
-              className="group hover:shadow-lg transition-all duration-300 border-border/50"
+               key={index}
+               className="group hover:shadow-lg transition-all duration-300 border-border/50 h-full flex flex-col"
             >
+
               <CardHeader>
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary/10 rounded-lg p-3">
@@ -80,18 +81,22 @@ export function FeaturesSection() {
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
+
                 <CardDescription className="text-base mb-4 leading-relaxed">
                   {feature.description}
                 </CardDescription>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors bg-transparent"
-                >
-                  <Link href={feature.href}>Learn More</Link>
-                </Button>
+                <div className="mt-auto">
+  <Button
+    variant="outline"
+    size="sm"
+    asChild
+    className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors bg-transparent"
+  >
+    <Link href={feature.href}>Learn More</Link>
+  </Button>
+</div>
+
               </CardContent>
             </Card>
           ))}
@@ -122,9 +127,10 @@ export function FeaturesSection() {
                 <Button
                   size="lg"
                   variant="outline"
+                  asChild
                   className="border-red-600 text-red-600 hover:bg-red-50 bg-transparent"
                 >
-                  Emergency Resources
+                  <Link href="/resources">Emergency Resources</Link>
                 </Button>
               </div>
             </CardContent>

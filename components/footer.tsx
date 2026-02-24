@@ -96,7 +96,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border mt-8 pt-4 text-center text-muted-foreground">
-          <p>© 2025 SoulSupport Digital Mental Health Platform. Built with care for student wellbeing.</p>
+          <p>© 2026 SoulSupport Digital Mental Health Platform. Built with care for student wellbeing.</p>
           <p className="mt-2 text-sm">
             If you're in crisis, please contact emergency services or call our 24/7 helpline.
           </p>

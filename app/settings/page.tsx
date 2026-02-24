@@ -195,7 +195,6 @@ export default function SettingsPage() {
                     {/* User Info */}
                     <div className="bg-muted/40 p-4 rounded-xl text-sm text-foreground">
                       <p><strong>Email:</strong> {user.email}</p>
-                      <p className="mt-1"><strong>Role:</strong> <span className="capitalize">{user.role}</span></p>
                     </div>
 
                     {/* Edit Name */}
@@ -204,6 +203,11 @@ export default function SettingsPage() {
                       <Input value={name} onChange={(e) => setName(e.target.value)} />
                       <Button className="w-full" onClick={handleProfileUpdate}>
                         Save Changes
+                      </Button>
+                    </div>
+                    <div className="pt-4">
+                      <Button variant="ghost" className="w-full" onClick={() => router.back()}>
+                        Back
                       </Button>
                     </div>
                   </CardContent>
@@ -239,6 +243,11 @@ export default function SettingsPage() {
                         Change Password
                       </Button>
                     </div>
+                    <div className="pt-2">
+                      <Button variant="ghost" className="w-full" onClick={() => router.back()}>
+                        Back
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -259,6 +268,11 @@ export default function SettingsPage() {
                       onCheckedChange={setEmailNotifications}
                     />
                   </CardContent>
+                  <div className="p-4">
+                    <Button variant="ghost" className="w-full" onClick={() => router.back()}>
+                      Back
+                    </Button>
+                  </div>
                 </Card>
               )}
 
@@ -278,6 +292,11 @@ export default function SettingsPage() {
                       onCheckedChange={setDarkMode}
                     />
                   </CardContent>
+                  <div className="p-4">
+                    <Button variant="ghost" className="w-full" onClick={() => router.back()}>
+                      Back
+                    </Button>
+                  </div>
                 </Card>
               )}
 
@@ -308,6 +327,11 @@ export default function SettingsPage() {
                     >
                       Delete Account
                     </Button>
+                    <div className="pt-2">
+                      <Button variant="ghost" className="w-full" onClick={() => router.back()}>
+                        Back
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
