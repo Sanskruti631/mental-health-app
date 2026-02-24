@@ -1,10 +1,22 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { MessageCircle, Calendar, BookOpen, Users, BarChart3, Brain, Heart, Headphones } from "lucide-react"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  MessageCircle,
+  Calendar,
+  BookOpen,
+  Brain,
+  Heart,
+  Headphones,
+} from "lucide-react";
+import Link from "next/link";
 
 export function FeaturesSection() {
-  
   const features: Array<{
     icon: React.ComponentType<{ className?: string }>;
     title: string;
@@ -14,40 +26,32 @@ export function FeaturesSection() {
     {
       icon: MessageCircle,
       title: "AI-Powered Chat Support",
-      description: "Get instant, confidential mental health guidance from our intelligent chatbot trained to help with stress, anxiety, and more.",
+      description:
+        "Get instant, confidential mental health guidance from our intelligent chatbot trained to help with stress, anxiety, and more.",
       href: "/chat",
     },
     {
       icon: Calendar,
       title: "Book Counseling Sessions",
-      description: "Schedule appointments with verified therapists and counselors who specialize in student mental health.",
+      description:
+        "Schedule appointments with verified therapists and counselors who specialize in student mental health.",
       href: "/appointments",
     },
     {
       icon: BookOpen,
       title: "Self-Help Resources",
-      description: "Access curated articles, guided exercises, and evidence-based techniques for managing your mental wellbeing.",
+      description:
+        "Access curated articles, guided exercises, and evidence-based techniques for managing your mental wellbeing.",
       href: "/resources",
     },
     {
       icon: Brain,
       title: "Mental Health Assessments",
-      description: "Take clinically validated questionnaires like PHQ-9 and GAD-7 to better understand your mental health.",
+      description:
+        "Take clinically validated questionnaires like PHQ-9 and GAD-7 to better understand your mental health.",
       href: "/quiz",
     },
-    {
-      icon: Users,
-      title: "Peer Community",
-      description: "Connect anonymously with fellow students in moderated support groups and shared-experience forums.",
-      href: "/community",
-    },
-    {
-      icon: BarChart3,
-      title: "Mood & Progress Tracking",
-      description: "Monitor your emotional wellbeing over time with visual insights and personalized recommendations.",
-      href: "/mood-tracker",
-    },
-  ]
+  ];
 
   return (
     <section className="py-20 bg-muted/30">
@@ -57,13 +61,17 @@ export function FeaturesSection() {
             Everything You Need for Better Mental Health
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty leading-relaxed">
-            From AI-powered support to professional counseling, we provide comprehensive tools designed specifically for students.
+            From AI-powered support to professional counseling, we provide
+            comprehensive tools designed specifically for students.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-border/50">
+            <Card
+              key={index}
+              className="group hover:shadow-lg transition-all duration-300 border-border/50"
+            >
               <CardHeader>
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary/10 rounded-lg p-3">
@@ -73,7 +81,9 @@ export function FeaturesSection() {
                 </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base mb-4 leading-relaxed">{feature.description}</CardDescription>
+                <CardDescription className="text-base mb-4 leading-relaxed">
+                  {feature.description}
+                </CardDescription>
                 <Button
                   variant="outline"
                   size="sm"
@@ -93,13 +103,19 @@ export function FeaturesSection() {
             <CardContent className="p-8 text-center">
               <div className="flex items-center justify-center mb-4">
                 <Heart className="h-8 w-8 text-red-600 mr-2" />
-                <h3 className="text-2xl font-bold text-red-800 dark:text-red-200">Crisis Support Available 24/7</h3>
+                <h3 className="text-2xl font-bold text-red-800 dark:text-red-200">
+                  Crisis Support Available 24/7
+                </h3>
               </div>
               <p className="text-red-700 dark:text-red-300 mb-6 text-lg">
-                If you're experiencing a mental health emergency, immediate help is available.
+                If you're experiencing a mental health emergency, immediate help
+                is available.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
+                <Button
+                  size="lg"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
                   <Headphones className="h-5 w-5 mr-2" />
                   Crisis Helpline : 18008914413
                 </Button>
@@ -116,5 +132,5 @@ export function FeaturesSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
