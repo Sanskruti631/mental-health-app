@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Navigation } from "@/components/navigation"
@@ -17,13 +17,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { User, Lock, Bell, Palette, AlertTriangle } from "lucide-react"
+import { User, Lock, Bell, Palette } from "lucide-react"
 
 export default function SettingsPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading, logout, updateProfile, changePassword } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [activeSection, setActiveSection] = useState<"account" | "security" | "notifications" | "appearance" | "danger">("account")
+  const [activeSection, setActiveSection] = useState<"account" | "security" | "notifications" | "appearance">("account")
 
   const [name, setName] = useState("")
   const [photo, setPhoto] = useState<string | null>(null)
@@ -50,6 +51,14 @@ export default function SettingsPage() {
       setName(user.name || "")
     }
   }, [user])
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }, [darkMode])
 
   if (isLoading || !user) {
     return <div className="p-6 text-foreground">Loading...</div>
@@ -112,20 +121,17 @@ export default function SettingsPage() {
       setPhoto(reader.result as string)
     }
     reader.readAsDataURL(file)
+    // Reset input value to clear the filename display
+    e.target.value = ""
   }
 
-  const handleDeleteAccount = async () => {
-    const ok = confirm("Are you sure you want to delete your account?")
-    if (!ok) return
-    alert("Delete API will be connected with database later.")
-  }
+
 
   const sidebarItems = [
     { id: "account" as const, label: "Account", icon: User },
     { id: "security" as const, label: "Security", icon: Lock },
     { id: "notifications" as const, label: "Notifications", icon: Bell },
     { id: "appearance" as const, label: "Appearance", icon: Palette },
-    { id: "danger" as const, label: "Danger Zone", icon: AlertTriangle },
   ]
 
   return (
@@ -184,12 +190,19 @@ export default function SettingsPage() {
                           </AvatarFallback>
                         )}
                       </Avatar>
-                      <Input
+                      <input
+                        ref={fileInputRef}
                         type="file"
                         accept="image/*"
                         onChange={handlePhotoUpload}
-                        className="max-w-xs"
+                        className="hidden"
                       />
+                      <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Change Photo
+                      </Button>
                     </div>
 
                     {/* User Info */}
@@ -300,41 +313,7 @@ export default function SettingsPage() {
                 </Card>
               )}
 
-              {/* Danger Zone Section */}
-              {activeSection === "danger" && (
-                <Card className="border-destructive/30">
-                  <CardHeader>
-                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Irreversible actions for your account
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={async () => {
-                        await logout()
-                        router.push("/login")
-                      }}
-                    >
-                      Logout
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={handleDeleteAccount}
-                    >
-                      Delete Account
-                    </Button>
-                    <div className="pt-2">
-                      <Button variant="ghost" className="w-full" onClick={() => router.back()}>
-                        Back
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+
             </div>
           </div>
         </div>

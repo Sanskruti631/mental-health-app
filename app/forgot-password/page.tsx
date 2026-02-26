@@ -50,9 +50,10 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  // ✅ SUCCESS SCREEN
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
             <div className="bg-green-100 dark:bg-green-900/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
@@ -81,14 +82,23 @@ export default function ForgotPasswordPage() {
     )
   }
 
+  // ✅ MAIN SCREEN
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: "url('/login-bg.jpg')" }}
-    >
-      <div className="absolute inset-0 backdrop-blur-sm bg-black/20"></div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* 🔥 Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/image.png')" }}
+      />
 
+      {/* 🔥 Blur Overlay */}
+      <div className="absolute inset-0 backdrop-blur-sm bg-black/20" />
+
+      {/* 🔥 Content */}
       <div className="relative w-full max-w-md">
+        
+        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
             <div className="bg-primary rounded-lg p-3">
@@ -145,6 +155,7 @@ export default function ForgotPasswordPage() {
               </Button>
             </form>
 
+            {/* 🔙 Back Button */}
             <div className="mt-6 text-center">
               <Link
                 href="/login"

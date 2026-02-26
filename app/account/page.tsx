@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ChevronLeft } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
 export default function AccountPage() {
   const router = useRouter()
   const { user, isLoading, isAuthenticated, logout, updateProfile, changePassword } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState("")
   const [photo, setPhoto] = useState<string | null>(null)
@@ -104,16 +106,30 @@ export default function AccountPage() {
       setPhoto(reader.result as string)
     }
     reader.readAsDataURL(file)
+    // Reset input value to clear the filename display
+    e.target.value = ""
   }
 
   return (
     <div className="min-h-screen bg-emerald-50 flex justify-center items-start p-6">
       <Card className="w-full max-w-xl shadow-xl rounded-2xl border-0">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">My Account</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Manage your profile & preferences
-          </p>
+        <CardHeader className="pb-4">
+          <div className="flex items-start gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+              className="h-10 w-10 shrink-0 -ml-2"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex-1 text-center">
+              <CardTitle className="text-2xl">My Account</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage your profile & preferences
+              </p>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-8">
@@ -129,12 +145,19 @@ export default function AccountPage() {
               )}
             </Avatar>
 
-            <Input
+            <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handlePhotoUpload}
-              className="max-w-xs"
+              className="hidden"
             />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Change Photo
+            </Button>
           </div>
 
           {/* User Info */}
@@ -227,14 +250,10 @@ export default function AccountPage() {
             </DialogContent>
           </Dialog>
 
-          {/* Role UI */}
-          {user.role === "admin" ? (
+          {/* Role UI (admin only now) */}
+          {user.role === "admin" && (
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm">
               🛠 Admin Controls: You can manage students & reports.
-            </div>
-          ) : (
-            <div className="p-4 bg-green-50 border border-green-100 rounded-xl text-sm">
-              🎓 Student Dashboard: View quizzes & support.
             </div>
           )}
 
