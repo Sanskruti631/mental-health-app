@@ -3,6 +3,7 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { getSecurityHeaders } from "@/lib/auth-utils"
+import db from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,23 +19,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // In a real app, validate session with database
-    // For now, return mock user data based on session token
-    const mockUser = {
-      id: "user-123",
-      email: "student@university.edu",
-      name: "John Student",
-      role: "student",
-      isVerified: true,
-      profile: {
-        studentId: "STU12345",
-        adminId: "ADM001",
-        major: "Computer Science",
-        graduationYear: 2026,
-      },
+    const [rows]: any = await db.execute(
+      `SELECT u.*
+       FROM user_sessions s
+       JOIN users u ON s.user_id = u.id
+       WHERE s.session_token = ? AND s.is_active = true AND s.expires_at > NOW()`,
+      [sessionToken]
+    )
+
+    if (!rows || rows.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid or expired session" },
+        { status: 401, headers: getSecurityHeaders() }
+      )
     }
 
-    return NextResponse.json({ user: mockUser }, { headers: getSecurityHeaders() })
+    return NextResponse.json({ user: rows[0] }, { headers: getSecurityHeaders() })
   } catch (error) {
     console.error("Session validation error:", error)
     return NextResponse.json(
@@ -61,8 +61,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // In a real app, invalidate session in database
-    console.log("Invalidating session:", sessionToken)
+    await db.execute(
+      "UPDATE user_sessions SET is_active = false WHERE session_token = ?",
+      [sessionToken]
+    )
 
     const response = NextResponse.json({ message: "Session ended successfully" }, { headers: getSecurityHeaders() })
 
