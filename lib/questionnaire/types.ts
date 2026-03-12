@@ -4,13 +4,16 @@ export interface QuestionnaireOption {
   value: number // 0–3 scale
 }
 
-export type QuestionnaireCategory = "mood" | "stress" | "sleep" | "motivation" | "social"
+export type QuestionnaireCategory = "mood" | "stress" | "sleep" | "motivation" | "social" | "general"
+
+export type ClinicalScale = "phq9" | "gad7" | "ghq12" | "regional"
 
 export interface QuestionnaireItem {
   id: string
   question: string
   options: QuestionnaireOption[]
   category: QuestionnaireCategory
+  scale: ClinicalScale // New field to group by scale
   weight: number // contribution strength to aggregate score
   reverse?: boolean // if true, reverse-score (3 -> 0, 2 -> 1, etc.)
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { QuestionnaireAnswer } from "@/lib/questionnaire/types"
-import { scoreQuestionnaire } from "@/lib/questionnaire/scoreQuestionnaire"
+import { calculateClinicalScores } from "@/lib/questionnaire/scoreQuestionnaire"
 import { getSecurityHeaders } from "@/lib/auth-utils"
 
 export async function POST(request: Request) {
@@ -16,13 +16,18 @@ export async function POST(request: Request) {
     }
 
     const answers: QuestionnaireAnswer[] = json.answers
-    const { score, riskLevel } = scoreQuestionnaire(answers)
+    const clinicalScores = calculateClinicalScores(answers)
 
     return NextResponse.json(
-      { score, riskLevel },
+      { 
+        score: clinicalScores.overallRiskScore, 
+        riskLevel: clinicalScores.riskLevel,
+        clinicalScores 
+      },
       { headers: getSecurityHeaders() }
     )
-  } catch {
+  } catch (error) {
+    console.error("Quiz submission error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500, headers: getSecurityHeaders() }

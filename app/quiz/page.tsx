@@ -3,8 +3,16 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { QUESTIONNAIRE_V1 } from "@/lib/questionnaire/questions";
-import type { QuestionnaireAnswer } from "@/lib/questionnaire/types";
+import {
+  PHQ9_QUESTIONS,
+  GAD7_QUESTIONS,
+  GHQ12_QUESTIONS,
+  QUESTIONNAIRE_V1,
+} from "@/lib/questionnaire/questions";
+import type {
+  QuestionnaireAnswer,
+  ClinicalScale,
+} from "@/lib/questionnaire/types";
 import {
   Home,
   Cpu,
@@ -21,21 +29,60 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 export default function QuizWithSidebarPage() {
-  const items = QUESTIONNAIRE_V1;
   const router = useRouter();
-  const [step, setStep] = useState(0);
+
+  // Group questions by scale for the multi-step flow
+  const steps: {
+    title: string;
+    subtitle: string;
+    scale: ClinicalScale;
+    questions: any[];
+  }[] = [
+    {
+      title: "Mood & Motivation",
+      subtitle: "Screening for depressive symptoms (PHQ-9)",
+      scale: "phq9",
+      questions: PHQ9_QUESTIONS,
+    },
+    {
+      title: "Anxiety & Stress",
+      subtitle: "Screening for anxiety levels (GAD-7)",
+      scale: "gad7",
+      questions: GAD7_QUESTIONS,
+    },
+    {
+      title: "General Wellbeing",
+      subtitle: "Overall health and coping (GHQ-12)",
+      scale: "ghq12",
+      questions: GHQ12_QUESTIONS,
+    },
+  ];
+
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<number | null>(null);
   const [result, setResult] = useState<{
     score: number;
     riskLevel: string;
+    phq9?: number;
+    gad7?: number;
+    ghq12?: number;
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const current = items[step];
+  const currentStep = steps[currentStepIdx];
+  const currentQuestion = currentStep.questions[currentQuestionIdx];
+
+  const totalQuestions = steps.reduce((acc, s) => acc + s.questions.length, 0);
+  const questionsBeforeCurrentStep = steps
+    .slice(0, currentStepIdx)
+    .reduce((acc, s) => acc + s.questions.length, 0);
+  const globalQuestionIdx = questionsBeforeCurrentStep + currentQuestionIdx;
+
   const progress = useMemo(
-    () => Math.round(((step + 1) / items.length) * 100),
-    [step, items.length],
+    () => Math.round(((globalQuestionIdx + 1) / totalQuestions) * 100),
+    [globalQuestionIdx, totalQuestions],
   );
 
   const handleSelect = (val: number) => {
@@ -44,36 +91,58 @@ export default function QuizWithSidebarPage() {
 
   const handleNext = () => {
     if (selected === null) return;
-    setAnswers((prev) => ({ ...prev, [current.id]: selected }));
+
+    // Save answer
+    const newAnswers = { ...answers, [currentQuestion.id]: selected };
+    setAnswers(newAnswers);
     setSelected(null);
-    if (step < items.length - 1) {
-      setStep((s) => s + 1);
-    } else {
-      submit();
+
+    // Check if there are more questions in current step
+    if (currentQuestionIdx < currentStep.questions.length - 1) {
+      setCurrentQuestionIdx(currentQuestionIdx + 1);
+    }
+    // Check if there are more steps
+    else if (currentStepIdx < steps.length - 1) {
+      setCurrentStepIdx(currentStepIdx + 1);
+      setCurrentQuestionIdx(0);
+    }
+    // Final submission
+    else {
+      submit(newAnswers);
     }
   };
 
   const handleBack = () => {
-    if (step === 0) return;
-    const prevStep = step - 1;
-    const prevItem = items[prevStep];
-    setStep(prevStep);
-    setSelected(answers[prevItem.id] ?? null);
+    if (currentQuestionIdx > 0) {
+      setCurrentQuestionIdx(currentQuestionIdx - 1);
+      const prevQuestionId = currentStep.questions[currentQuestionIdx - 1].id;
+      setSelected(answers[prevQuestionId] ?? null);
+    } else if (currentStepIdx > 0) {
+      const prevStepIdx = currentStepIdx - 1;
+      const prevStep = steps[prevStepIdx];
+      setCurrentStepIdx(prevStepIdx);
+      setCurrentQuestionIdx(prevStep.questions.length - 1);
+      const prevQuestionId =
+        prevStep.questions[prevStep.questions.length - 1].id;
+      setSelected(answers[prevQuestionId] ?? null);
+    }
   };
 
   const resetAll = () => {
     setSelected(null);
     setAnswers({});
-    setStep(0);
+    setCurrentStepIdx(0);
+    setCurrentQuestionIdx(0);
     setResult(null);
   };
 
-  const submit = async () => {
+  const submit = async (finalAnswers: Record<string, number>) => {
     setSubmitting(true);
     const payload: { answers: QuestionnaireAnswer[] } = {
-      answers: items
-        .filter((it) => typeof answers[it.id] === "number")
-        .map((it) => ({ id: it.id, value: answers[it.id] })),
+      answers: Object.entries(finalAnswers).map(([id, value]) => ({
+        id,
+        value,
+      })),
     };
     try {
       const res = await fetch("/api/questionnaire/submit", {
@@ -83,10 +152,16 @@ export default function QuizWithSidebarPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setResult({ score: data.score, riskLevel: data.riskLevel });
+        setResult({
+          score: data.score,
+          riskLevel: data.riskLevel,
+          phq9: data.clinicalScores?.phq9,
+          gad7: data.clinicalScores?.gad7,
+          ghq12: data.clinicalScores?.ghq12,
+        });
         setTimeout(() => {
           router.push("/chat");
-        }, 1500);
+        }, 2000);
       } else {
         setResult({ score: 0, riskLevel: "low" });
       }
@@ -173,13 +248,15 @@ export default function QuizWithSidebarPage() {
           <div className="absolute inset-0 flex items-center justify-between p-6">
             <div>
               <h1 className="text-2xl font-bold text-dark-green drop-shadow">
-                SoulSupport
+                {currentStep.title}
               </h1>
-              <p className="text-ss text-green-100/90">Wellness Check-In</p>
+              <p className="text-ss text-green-100/90">
+                {currentStep.subtitle}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-white/90 text-sm">
-                Question {step + 1} of {items.length}
+                Question {globalQuestionIdx + 1} of {totalQuestions}
               </p>
               <p className="text-white/80 text-xs">{progress}%</p>
             </div>
@@ -192,7 +269,7 @@ export default function QuizWithSidebarPage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Question {step + 1} of {items.length}
+                    Question {globalQuestionIdx + 1} of {totalQuestions}
                   </p>
                 </div>
                 <div className="w-48">
@@ -200,10 +277,12 @@ export default function QuizWithSidebarPage() {
                 </div>
               </div>
 
-              <h2 className="text-xl font-semibold mb-4">{current.question}</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {currentQuestion.question}
+              </h2>
 
               <div className="space-y-3">
-                {current.options.map((opt) => {
+                {currentQuestion.options.map((opt) => {
                   const isActive = selected === opt.value;
                   return (
                     <button
@@ -232,7 +311,7 @@ export default function QuizWithSidebarPage() {
                 <Button
                   variant="outline"
                   onClick={handleBack}
-                  disabled={step === 0}
+                  disabled={currentStepIdx === 0 && currentQuestionIdx === 0}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
@@ -247,7 +326,7 @@ export default function QuizWithSidebarPage() {
                     className="px-6"
                     disabled={selected === null || submitting}
                   >
-                    {step === items.length - 1
+                    {globalQuestionIdx === totalQuestions - 1
                       ? submitting
                         ? "Submitting..."
                         : "Submit"
@@ -259,10 +338,80 @@ export default function QuizWithSidebarPage() {
           </Card>
 
           {result && (
-            <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Submitted. Score: {result.score}, Risk: {result.riskLevel}
-              </p>
+            <div className="mt-8 space-y-4">
+              <Card className="bg-emerald-50 border-emerald-200">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-emerald-900 mb-2">
+                    Assessment Summary
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="p-3 bg-white rounded-lg border border-emerald-100 text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                        PHQ-9 (Mood)
+                      </p>
+                      <p className="text-2xl font-bold text-emerald-700">
+                        {result.phq9 ?? 0}
+                      </p>
+                      <p className="text-[10px] text-emerald-600/70">
+                        Scale: 0-27
+                      </p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg border border-emerald-100 text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                        GAD-7 (Anxiety)
+                      </p>
+                      <p className="text-2xl font-bold text-emerald-700">
+                        {result.gad7 ?? 0}
+                      </p>
+                      <p className="text-[10px] text-emerald-600/70">
+                        Scale: 0-21
+                      </p>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg border border-emerald-100 text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                        GHQ-12 (Health)
+                      </p>
+                      <p className="text-2xl font-bold text-emerald-700">
+                        {result.ghq12 ?? 0}
+                      </p>
+                      <p className="text-[10px] text-emerald-600/70">
+                        Scale: 0-12
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-emerald-200 shadow-sm">
+                    <div>
+                      <p className="text-sm font-medium text-emerald-800">
+                        Overall Risk Level
+                      </p>
+                      <p
+                        className={`text-xl font-bold capitalize ${
+                          result.riskLevel === "crisis"
+                            ? "text-red-600"
+                            : result.riskLevel === "high"
+                              ? "text-orange-600"
+                              : result.riskLevel === "medium"
+                                ? "text-yellow-600"
+                                : "text-emerald-600"
+                        }`}
+                      >
+                        {result.riskLevel}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-emerald-800">
+                        Score
+                      </p>
+                      <p className="text-xl font-bold text-emerald-700">
+                        {(result.score * 100).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-xs text-emerald-700/60 italic text-center">
+                    Redirecting to chat for personalized support...
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           )}
 
