@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const [rows] = await db.query("SELECT 1 as test");
+    const result = await prisma.$queryRaw`SELECT 1 as test`;
     return NextResponse.json({
       success: true,
-      data: rows,
+      data: result,
     });
   } catch (error) {
+    console.error("Test DB error:", error);
     return NextResponse.json({
       success: false,
       error,

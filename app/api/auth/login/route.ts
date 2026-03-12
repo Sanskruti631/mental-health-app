@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import prisma from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
@@ -14,21 +14,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const [rows]: any = await db.execute(
-      "SELECT id, email, name, role, password_hash, is_verified, is_active FROM users WHERE email = ? LIMIT 1",
-      [email]
-    );
+    const user = await prisma.users.findUnique({
+      where: { email },
+    });
 
-    if (rows.length === 0) {
+    if (!user) {
       return NextResponse.json(
         { success: false, message: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    const user = rows[0];
-
-    if (user.is_active === 0) {
+    if (!user.is_active) {
       return NextResponse.json(
         { success: false, message: "Account is inactive" },
         { status: 403 }
@@ -46,10 +43,20 @@ export async function POST(req: Request) {
     const sessionToken = randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await db.execute(
-      "INSERT INTO user_sessions (user_id, session_token, expires_at, is_active) VALUES (?, ?, ?, true)",
-      [user.id, sessionToken, expiresAt]
-    );
+    await prisma.user_sessions.create({
+      data: {
+        user_id: user.id,
+        session_token: sessionToken,
+        expires_at: expiresAt,
+        is_active: true,
+      },
+    });
+
+    // Update last login
+    await prisma.users.update({
+      where: { id: user.id },
+      data: { last_login: new Date() },
+    });
 
     const res = NextResponse.json(
       {
@@ -83,6 +90,7 @@ export async function POST(req: Request) {
     return res;
 
   } catch (error: any) {
+    console.error("Login error:", error);
     return NextResponse.json(
       {
         success: false,

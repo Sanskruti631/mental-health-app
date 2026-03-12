@@ -3,6 +3,8 @@
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import prisma from "./prisma"
+import bcrypt from "bcryptjs"
 
 export interface User {
   id: string
@@ -49,31 +51,46 @@ export interface Session {
 
 // Server-side authentication check
 export async function getServerSession(): Promise<Session | null> {
-  const cookieStore = cookies()
-  const sessionToken = (await cookieStore).get("session-token")?.value
+  const cookieStore = await cookies()
+  const sessionToken = cookieStore.get("session-token")?.value
 
   if (!sessionToken) {
     return null
   }
 
   try {
-    // In a real app, validate session with database
-    // For now, return mock session data
-    const mockSession: Session = {
-      id: "session-123",
-      userId: "user-123",
-      sessionToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-      user: {
-        id: "user-123",
-        email: "user@example.com",
-        name: "Test User",
-        role: "student",
-        isVerified: true,
+    const session = await prisma.user_sessions.findUnique({
+      where: {
+        session_token: sessionToken,
+        is_active: true,
+        expires_at: {
+          gt: new Date(),
+        },
       },
+      include: {
+        users: true,
+      },
+    })
+
+    if (!session || !session.users) {
+      return null
     }
 
-    return mockSession
+    const user: User = {
+      id: session.users.id,
+      email: session.users.email,
+      name: session.users.name,
+      role: session.users.role as any,
+      isVerified: !!session.users.is_verified,
+    }
+
+    return {
+      id: session.id,
+      userId: session.user_id,
+      sessionToken: session.session_token,
+      expiresAt: session.expires_at,
+      user,
+    }
   } catch (error) {
     console.error("Session validation error:", error)
     return null
@@ -168,16 +185,14 @@ export function getPasswordResetExpiry(): Date {
   return new Date(Date.now() + 15 * 60 * 1000)
 }
 
-// Hash password (mock implementation)
+// Hash password
 export async function hashPassword(password: string): Promise<string> {
-  // In a real app, use bcrypt or similar
-  return `hashed_${password}`
+  return await bcrypt.hash(password, 10)
 }
 
-// Verify password (mock implementation)
+// Verify password
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  // In a real app, use bcrypt.compare or similar
-  return hash === `hashed_${password}`
+  return await bcrypt.compare(password, hash)
 }
 
 // Role-based permission checks

@@ -3,7 +3,7 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { getSecurityHeaders } from "@/lib/auth-utils"
-import db from "@/lib/db"
+import prisma from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,22 +19,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const [rows]: any = await db.execute(
-      `SELECT u.*
-       FROM user_sessions s
-       JOIN users u ON s.user_id = u.id
-       WHERE s.session_token = ? AND s.is_active = true AND s.expires_at > NOW()`,
-      [sessionToken]
-    )
+    const session = await prisma.user_sessions.findFirst({
+      where: {
+        session_token: sessionToken,
+        is_active: true,
+        expires_at: {
+          gt: new Date(),
+        },
+      },
+      include: {
+        users: true,
+      },
+    })
 
-    if (!rows || rows.length === 0) {
+    if (!session || !session.users) {
       return NextResponse.json(
         { error: "Invalid or expired session" },
         { status: 401, headers: getSecurityHeaders() }
       )
     }
 
-    return NextResponse.json({ user: rows[0] }, { headers: getSecurityHeaders() })
+    return NextResponse.json({ user: session.users }, { headers: getSecurityHeaders() })
   } catch (error) {
     console.error("Session validation error:", error)
     return NextResponse.json(
@@ -61,10 +66,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await db.execute(
-      "UPDATE user_sessions SET is_active = false WHERE session_token = ?",
-      [sessionToken]
-    )
+    await prisma.user_sessions.update({
+      where: { session_token: sessionToken },
+      data: { is_active: false },
+    })
 
     const response = NextResponse.json({ message: "Session ended successfully" }, { headers: getSecurityHeaders() })
 

@@ -1,15 +1,195 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model admin_profiles {
+  id           String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id      String    @unique(map: "user_id") @db.Char(36)
+  college_name String    @db.VarChar(255)
+  college_id   String    @unique(map: "college_id") @db.VarChar(50)
+  position     String?   @db.VarChar(255)
+  department   String?   @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "admin_profiles_ibfk_1")
+
+  @@index([college_id], map: "idx_admin_profiles_college_id")
+  @@index([user_id], map: "idx_admin_profiles_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model appointment_notes {
+  id              String       @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  appointment_id  String       @db.Char(36)
+  therapist_id    String       @db.Char(36)
+  session_notes   String?      @db.Text
+  treatment_plan  String?      @db.Text
+  next_steps      String?      @db.Text
+  risk_assessment String?      @db.VarChar(20)
+  created_at      DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?    @default(now()) @db.Timestamp(0)
+  appointments    appointments @relation(fields: [appointment_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "appointment_notes_ibfk_1")
+  users           users        @relation(fields: [therapist_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "appointment_notes_ibfk_2")
+
+  @@index([appointment_id], map: "idx_appointment_notes_appointment_id")
+  @@index([therapist_id], map: "idx_appointment_notes_therapist_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model appointments {
+  id                                     String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  student_id                             String              @db.Char(36)
+  therapist_id                           String              @db.Char(36)
+  appointment_date                       DateTime            @db.Date
+  appointment_time                       DateTime            @db.Time(0)
+  duration_minutes                       Int?                @default(60)
+  session_type                           String              @db.VarChar(20)
+  status                                 String?             @default("pending") @db.VarChar(20)
+  urgency_level                          String?             @default("medium") @db.VarChar(20)
+  is_first_session                       Boolean?            @default(false)
+  notes                                  String?             @db.Text
+  cancellation_reason                    String?             @db.Text
+  created_at                             DateTime?           @default(now()) @db.Timestamp(0)
+  updated_at                             DateTime?           @default(now()) @db.Timestamp(0)
+  appointment_notes                      appointment_notes[]
+  users_appointments_student_idTousers   users               @relation("appointments_student_idTousers", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "appointments_ibfk_1")
+  users_appointments_therapist_idTousers users               @relation("appointments_therapist_idTousers", fields: [therapist_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "appointments_ibfk_2")
+
+  @@index([appointment_date], map: "idx_appointments_date")
+  @@index([status], map: "idx_appointments_status")
+  @@index([student_id], map: "idx_appointments_student_id")
+  @@index([therapist_id], map: "idx_appointments_therapist_id")
+  @@index([urgency_level], map: "idx_appointments_urgency")
+}
+
+model email_verification_tokens {
+  id          String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id     String    @db.Char(36)
+  token       String    @unique(map: "token") @db.VarChar(255)
+  expires_at  DateTime  @db.Timestamp(0)
+  verified_at DateTime? @db.Timestamp(0)
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "email_verification_tokens_ibfk_1")
+
+  @@index([expires_at], map: "idx_email_verification_expires_at")
+  @@index([token], map: "idx_email_verification_token")
+  @@index([user_id], map: "idx_email_verification_user_id")
+}
+
+model password_reset_tokens {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id    String    @db.Char(36)
+  token      String    @unique(map: "token") @db.VarChar(255)
+  expires_at DateTime  @db.Timestamp(0)
+  used_at    DateTime? @db.Timestamp(0)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "password_reset_tokens_ibfk_1")
+
+  @@index([expires_at], map: "idx_password_reset_expires_at")
+  @@index([token], map: "idx_password_reset_token")
+  @@index([user_id], map: "idx_password_reset_user_id")
+}
+
+model student_profiles {
+  id              String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id         String    @unique(map: "user_id") @db.Char(36)
+  student_id      String    @unique(map: "student_id") @db.VarChar(50)
+  admin_id        String    @db.VarChar(50)
+  enrollment_date DateTime? @db.Date
+  graduation_year Int?
+  major           String?   @db.VarChar(255)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "student_profiles_ibfk_1")
+
+  @@index([student_id], map: "idx_student_profiles_student_id")
+  @@index([user_id], map: "idx_student_profiles_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model therapist_availability {
+  id           String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  therapist_id String    @db.Char(36)
+  day_of_week  Int
+  start_time   DateTime  @db.Time(0)
+  end_time     DateTime  @db.Time(0)
+  is_available Boolean?  @default(true)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  users        users     @relation(fields: [therapist_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "therapist_availability_ibfk_1")
+
+  @@index([day_of_week], map: "idx_therapist_availability_day")
+  @@index([therapist_id], map: "idx_therapist_availability_therapist_id")
+}
+
+model therapist_profiles {
+  id                    String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id               String    @unique(map: "user_id") @db.Char(36)
+  license_number        String    @unique(map: "license_number") @db.VarChar(100)
+  specialties           Json?
+  years_experience      String?   @db.VarChar(20)
+  bio                   String?   @db.Text
+  photo_url             String?   @db.VarChar(500)
+  rating                Decimal?  @default(0.00) @db.Decimal(3, 2)
+  total_reviews         Int?      @default(0)
+  hourly_rate           Decimal?  @db.Decimal(10, 2)
+  is_accepting_patients Boolean?  @default(true)
+  created_at            DateTime? @default(now()) @db.Timestamp(0)
+  updated_at            DateTime? @default(now()) @db.Timestamp(0)
+  users                 users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "therapist_profiles_ibfk_1")
+
+  @@index([license_number], map: "idx_therapist_profiles_license")
+  @@index([user_id], map: "idx_therapist_profiles_user_id")
+}
+
+model user_sessions {
+  id            String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id       String    @db.Char(36)
+  session_token String    @unique(map: "session_token") @db.VarChar(255)
+  refresh_token String?   @unique(map: "refresh_token") @db.VarChar(255)
+  expires_at    DateTime  @db.Timestamp(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  last_accessed DateTime? @default(now()) @db.Timestamp(0)
+  ip_address    String?   @db.VarChar(45)
+  user_agent    String?   @db.Text
+  is_active     Boolean?  @default(true)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_sessions_ibfk_1")
+
+  @@index([is_active], map: "idx_sessions_active")
+  @@index([expires_at], map: "idx_sessions_expires_at")
+  @@index([session_token], map: "idx_sessions_token")
+  @@index([user_id], map: "idx_sessions_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id                                            String                      @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  email                                         String                      @unique(map: "email") @db.VarChar(255)
+  password_hash                                 String                      @db.VarChar(255)
+  name                                          String                      @db.VarChar(255)
+  role                                          String                      @db.VarChar(20)
+  is_verified                                   Boolean?                    @default(false)
+  is_active                                     Boolean?                    @default(true)
+  created_at                                    DateTime?                   @default(now()) @db.Timestamp(0)
+  updated_at                                    DateTime?                   @default(now()) @db.Timestamp(0)
+  last_login                                    DateTime?                   @db.Timestamp(0)
+  admin_profiles                                admin_profiles?
+  appointment_notes                             appointment_notes[]
+  appointments_appointments_student_idTousers   appointments[]              @relation("appointments_student_idTousers")
+  appointments_appointments_therapist_idTousers appointments[]              @relation("appointments_therapist_idTousers")
+  email_verification_tokens                     email_verification_tokens[]
+  password_reset_tokens                         password_reset_tokens[]
+  student_profiles                              student_profiles?
+  therapist_availability                        therapist_availability[]
+  therapist_profiles                            therapist_profiles?
+  user_sessions                                 user_sessions[]
+
+  @@index([created_at], map: "idx_users_created_at")
+  @@index([email], map: "idx_users_email")
+  @@index([role], map: "idx_users_role")
 }

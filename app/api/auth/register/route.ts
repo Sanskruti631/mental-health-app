@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import prisma from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
@@ -21,50 +21,89 @@ export async function POST(req: Request) {
     }
 
     // Enforce unique email
-    const [exists]: any = await db.execute("SELECT id FROM users WHERE email = ? LIMIT 1", [email]);
-    if (exists.length) {
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (existingUser) {
       return NextResponse.json(
         { success: false, message: "Email already registered" },
         { status: 409 }
       );
     }
 
-    const id = randomUUID();
+    const userId = randomUUID();
     const passwordHash = await bcrypt.hash(String(password), 10);
 
-    const query = `
-      INSERT INTO users (id, email, password_hash, name, role)
-      VALUES (?, ?, ?, ?, ?)
-    `;
+    // Create user and profile in a transaction
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.users.create({
+        data: {
+          id: userId,
+          email,
+          password_hash: passwordHash,
+          name,
+          role,
+          is_active: true,
+          is_verified: false,
+        },
+      });
 
-    await db.execute(query, [
-      id,
-      email,
-      passwordHash,
-      name,
-      role,
-    ]);
+      // Create role-specific profile if needed
+      if (role === "student") {
+        await tx.student_profiles.create({
+          data: {
+            user_id: userId,
+            student_id: `STU-${randomUUID().slice(0, 8)}`, // Placeholder student ID
+            admin_id: "SYSTEM", // Placeholder admin ID
+          },
+        });
+      } else if (role === "admin") {
+        await tx.admin_profiles.create({
+          data: {
+            user_id: userId,
+            college_name: "SoulSupport Academy", // Placeholder
+            college_id: `ADM-${randomUUID().slice(0, 8)}`, // Placeholder
+          },
+        });
+      } else if (role === "therapist") {
+        await tx.therapist_profiles.create({
+          data: {
+            user_id: userId,
+            license_number: `LIC-${randomUUID().slice(0, 8)}`, // Placeholder
+          },
+        });
+      }
+
+      return user;
+    });
 
     const sessionToken = randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await db.execute(
-      "INSERT INTO user_sessions (user_id, session_token, expires_at, is_active) VALUES (?, ?, ?, true)",
-      [id, sessionToken, expiresAt]
-    );
-
-    const [rows]: any = await db.execute(
-      "SELECT id, email, name, role, is_verified, is_active FROM users WHERE id = ?",
-      [id]
-    );
+    await prisma.user_sessions.create({
+      data: {
+        user_id: newUser.id,
+        session_token: sessionToken,
+        expires_at: expiresAt,
+        is_active: true,
+      },
+    });
 
     const res = NextResponse.json(
       {
         success: true,
-        user: rows?.[0] || null,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role,
+        },
       },
       { status: 201 }
     );
+
     res.cookies.set("session-token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -72,6 +111,7 @@ export async function POST(req: Request) {
       maxAge: 24 * 60 * 60,
       path: "/",
     });
+
     res.cookies.set("user-role", role, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -79,9 +119,11 @@ export async function POST(req: Request) {
       maxAge: 24 * 60 * 60,
       path: "/",
     });
+
     return res;
 
   } catch (error: any) {
+    console.error("Registration error:", error);
     return NextResponse.json(
       {
         success: false,
