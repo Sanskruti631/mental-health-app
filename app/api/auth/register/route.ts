@@ -1,12 +1,36 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
     const { email, password, name, role } = await req.json();
+    if (!email || !password || !name || !role) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+    const allowedRoles = ["student", "admin", "therapist"];
+    if (!allowedRoles.includes(role)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid role" },
+        { status: 400 }
+      );
+    }
+
+    // Enforce unique email
+    const [exists]: any = await db.execute("SELECT id FROM users WHERE email = ? LIMIT 1", [email]);
+    if (exists.length) {
+      return NextResponse.json(
+        { success: false, message: "Email already registered" },
+        { status: 409 }
+      );
+    }
 
     const id = randomUUID();
+    const passwordHash = await bcrypt.hash(String(password), 10);
 
     const query = `
       INSERT INTO users (id, email, password_hash, name, role)
@@ -16,7 +40,7 @@ export async function POST(req: Request) {
     await db.execute(query, [
       id,
       email,
-      password,
+      passwordHash,
       name,
       role,
     ]);
@@ -29,12 +53,18 @@ export async function POST(req: Request) {
       [id, sessionToken, expiresAt]
     );
 
-    const [rows]: any = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+    const [rows]: any = await db.execute(
+      "SELECT id, email, name, role, is_verified, is_active FROM users WHERE id = ?",
+      [id]
+    );
 
-    const res = NextResponse.json({
-      success: true,
-      user: rows?.[0] || null,
-    });
+    const res = NextResponse.json(
+      {
+        success: true,
+        user: rows?.[0] || null,
+      },
+      { status: 201 }
+    );
     res.cookies.set("session-token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -52,9 +82,12 @@ export async function POST(req: Request) {
     return res;
 
   } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-    });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }

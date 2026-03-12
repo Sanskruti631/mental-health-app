@@ -15,21 +15,25 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   // ✅ CONNECTED TO AUTH SYSTEM
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
-      await login({
-        email: "student@university.edu", // temp testing
-        password: "123",
-        userType: "student",
-      })
+      setError(null)
+      setLoading(true)
+      await login({ email, password, userType: "student" })
 
       router.push("/quiz")
     } catch (error) {
-      console.error("Login failed:", error)
+      setError((error as any)?.message || "Login failed")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -67,8 +71,8 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" type="text" placeholder="Enter your username" required />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="Enter your email" required value={email} onChange={(e)=>setEmail(e.target.value)} />
               </div>
 
               <div>
@@ -79,6 +83,8 @@ export default function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     required
+                    value={password}
+                    onChange={(e)=>setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -96,8 +102,10 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {error && <div className="text-sm text-red-600">{error}</div>}
+
               <Button type="submit" className="w-full">
-                Login
+                {loading ? "Logging in..." : "Login"}
               </Button>
 
               <Button

@@ -10,12 +10,49 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Heart, Eye, EyeOff } from "lucide-react"
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/auth-context"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { t } = useTranslation();
+  const { register } = useAuth()
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [nickname, setNickname] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!email || !password || !confirmPassword || !nickname) {
+      setError("Please fill all required fields")
+      return
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    setLoading(true)
+    try {
+      await register({
+        email,
+        password,
+        confirmPassword,
+        name: nickname,
+        userType: "student",
+      } as any)
+      router.push("/quiz")
+    } catch (err: any) {
+      setError(err?.message || "Registration failed")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div
@@ -45,7 +82,7 @@ export default function RegisterPage() {
           </CardHeader>
 
           <CardContent>
-            <form className="space-y-3">
+            <form className="space-y-3" onSubmit={onSubmit}>
 
               {/* Username */}
               <div>
@@ -56,11 +93,23 @@ export default function RegisterPage() {
               {/* Nickname */}
               <div>
                 <Label htmlFor="nickname">Nickname *</Label>
-                <Input id="nickname" type="text" placeholder="This name will appear on dashboard" />
+                <Input
+                  id="nickname"
+                  type="text"
+                  placeholder="This name will appear on dashboard"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="Email">Email </Label>
-                <Input id="email" type="email" placeholder="Enter your email address" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               {/* Password */}
@@ -71,6 +120,8 @@ export default function RegisterPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -92,6 +143,8 @@ export default function RegisterPage() {
                     id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -105,8 +158,10 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {error && <div className="text-sm text-red-600">{error}</div>}
+
               <Button type="submit" className="w-full">
-                Create Account
+                {loading ? "Creating..." : "Create Account"}
               </Button>
               <Button
   type="button"
