@@ -5,22 +5,20 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, role } = await req.json();
-    if (!email || !password || !name || !role) {
+    const { email, password, name } = await req.json();
+
+    // ❌ Removed role from request
+    if (!email || !password || !name) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
-    const allowedRoles = ["student", "admin", "therapist"];
-    if (!allowedRoles.includes(role)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid role" },
-        { status: 400 }
-      );
-    }
 
-    // Enforce unique email
+    // ✅ FORCE ROLE = STUDENT
+    const role = "student";
+
+    // Check existing user
     const existingUser = await prisma.users.findUnique({
       where: { email },
       select: { id: true },
@@ -36,7 +34,7 @@ export async function POST(req: Request) {
     const userId = randomUUID();
     const passwordHash = await bcrypt.hash(String(password), 10);
 
-    // Create user and profile in a transaction
+    // ✅ Transaction (ONLY STUDENT PROFILE)
     const newUser = await prisma.$transaction(async (tx) => {
       const user = await tx.users.create({
         data: {
@@ -44,41 +42,25 @@ export async function POST(req: Request) {
           email,
           password_hash: passwordHash,
           name,
-          role,
+          role, // always student
           is_active: true,
           is_verified: false,
         },
       });
 
-      // Create role-specific profile if needed
-      if (role === "student") {
-        await tx.student_profiles.create({
-          data: {
-            user_id: userId,
-            student_id: `STU-${randomUUID().slice(0, 8)}`, // Placeholder student ID
-            admin_id: "SYSTEM", // Placeholder admin ID
-          },
-        });
-      } else if (role === "admin") {
-        await tx.admin_profiles.create({
-          data: {
-            user_id: userId,
-            college_name: "SoulSupport Academy", // Placeholder
-            college_id: `ADM-${randomUUID().slice(0, 8)}`, // Placeholder
-          },
-        });
-      } else if (role === "therapist") {
-        await tx.therapist_profiles.create({
-          data: {
-            user_id: userId,
-            license_number: `LIC-${randomUUID().slice(0, 8)}`, // Placeholder
-          },
-        });
-      }
+      // ✅ ONLY student profile created
+      await tx.student_profiles.create({
+        data: {
+          user_id: userId,
+          student_id: `STU-${randomUUID().slice(0, 8)}`,
+          admin_id: "SYSTEM",
+        },
+      });
 
       return user;
     });
 
+    // ✅ Create session
     const sessionToken = randomUUID();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
@@ -104,6 +86,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
 
+    // 🍪 Cookies
     res.cookies.set("session-token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

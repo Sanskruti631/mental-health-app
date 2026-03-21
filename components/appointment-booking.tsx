@@ -1,5 +1,6 @@
 "use client"
-
+import { useRouter } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,6 +29,8 @@ interface TimeSlot {
 }
 
 export function AppointmentBooking() {
+    const router = useRouter()
+  
   const [step, setStep] = useState(1)
   const [selectedCounselor, setSelectedCounselor] = useState<string>("")
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -119,6 +122,7 @@ export function AppointmentBooking() {
         <CardContent className="p-8 text-center">
           <div className="bg-green-100 dark:bg-green-900/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-green-600" />
+            
           </div>
           <h2 className="text-2xl font-bold mb-4">Appointment Confirmed!</h2>
           <p className="text-muted-foreground mb-6">
@@ -157,9 +161,21 @@ export function AppointmentBooking() {
     )
   }
 
-  return (
-    <div className="space-y-6 sm:space-y-8">
+  
+      return (
+  <div className="space-y-6 sm:space-y-8 relative">
+
+    {/* Simple Back Button */}
+    <button
+      onClick={() => router.back()} 
+      className="absolute left-2 top-2 p-2"
+
+    >
+      <ArrowLeft className="h-5 w-5" />
+    </button>
+
       {/* Progress Indicator */}
+      
       <div className="flex items-center justify-center space-x-2 sm:space-x-4 overflow-x-auto pb-2">
         {[1, 2, 3, 4].map((stepNumber) => (
           <div key={stepNumber} className="flex items-center flex-shrink-0">

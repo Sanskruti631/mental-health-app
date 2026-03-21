@@ -32,7 +32,7 @@ const cardVariants = {
 
 export default function StudentDashboard() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-blue-950/20 dark:to-emerald-950/20">
       {/* Header */}
       <motion.div
         className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b"

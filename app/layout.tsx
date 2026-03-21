@@ -1,6 +1,7 @@
 import "@/lib/i18n";
 import type React from "react";
 import type { Metadata } from "next";
+import { UserMenu } from "@/components/user-menu" // 👈 ADD THIS
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
@@ -25,6 +26,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
+          {/* ✅ ADD USER MENU HERE */}
+          <div className="flex justify-end p-4 border-b">
+            <UserMenu />
+          </div>
         </AuthProvider>
 
         <Analytics />

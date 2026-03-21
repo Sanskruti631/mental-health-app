@@ -14,22 +14,33 @@ import { Heart, Eye, EyeOff } from "lucide-react"
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [role, setRole] = useState<"student" | "admin" | "therapist">("student")
+
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // ✅ CONNECTED TO AUTH SYSTEM
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
       setError(null)
       setLoading(true)
-      await login({ email, password, userType: "student" })
 
-      router.push("/quiz")
+      await login({ email, password, userType: role })
+
+      // ✅ Role-based redirect
+      if (role === "admin") {
+        router.push("/dashboard")
+      } else if (role === "therapist") {
+        router.push("/therapist-dashboard")
+      } else {
+        router.push("/chat") // or /quiz if you prefer
+      }
+
     } catch (error) {
       setError((error as any)?.message || "Login failed")
     } finally {
@@ -39,6 +50,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
@@ -50,6 +62,7 @@ export default function LoginPage() {
       />
 
       <div className="w-full max-w-md">
+        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
             <div className="bg-primary rounded-lg p-3">
@@ -60,6 +73,7 @@ export default function LoginPage() {
           <p className="text-muted-foreground mt-2">Login to your account</p>
         </div>
 
+        {/* Card */}
         <Card className="backdrop-blur-md bg-white/80">
           <CardHeader>
             <CardTitle className="text-center">Welcome Back</CardTitle>
@@ -70,11 +84,21 @@ export default function LoginPage() {
 
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
+
+              {/* Email */}
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter your email" required value={email} onChange={(e)=>setEmail(e.target.value)} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
+              {/* Password */}
               <div>
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -84,7 +108,7 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     required
                     value={password}
-                    onChange={(e)=>setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -102,12 +126,29 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* 🔥 Role Selection */}
+              <div>
+                <Label>Select Role</Label>
+                <select
+                  className="w-full border rounded-md p-2"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as any)}
+                >
+                  <option value="student">Student</option>
+                  <option value="admin">Admin</option>
+                  <option value="therapist">Therapist</option>
+                </select>
+              </div>
+
+              {/* Error */}
               {error && <div className="text-sm text-red-600">{error}</div>}
 
+              {/* Login Button */}
               <Button type="submit" className="w-full">
                 {loading ? "Logging in..." : "Login"}
               </Button>
 
+              {/* Back Button */}
               <Button
                 type="button"
                 variant="outline"
@@ -118,6 +159,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
+            {/* Links */}
             <div className="mt-6 text-center space-y-2">
               <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                 Forgot your password?
@@ -130,6 +172,7 @@ export default function LoginPage() {
                 </Link>
               </div>
             </div>
+
           </CardContent>
         </Card>
       </div>

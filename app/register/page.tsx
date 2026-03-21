@@ -7,46 +7,54 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Heart, Eye, EyeOff } from "lucide-react"
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next"
 import { useAuth } from "@/contexts/auth-context"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { t } = useTranslation()
+  const { register } = useAuth()
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { t } = useTranslation();
-  const { register } = useAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [nickname, setNickname] = useState("")
+
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
     if (!email || !password || !confirmPassword || !nickname) {
       setError("Please fill all required fields")
       return
     }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match")
       return
     }
+
     setLoading(true)
+
     try {
       await register({
         email,
         password,
         confirmPassword,
         name: nickname,
-        userType: "student",
+        userType: "student", // ✅ fixed role
       } as any)
-      router.push("/quiz")
+
+      // ✅ Always redirect student
+      router.push("/chat")
+
     } catch (err: any) {
       setError(err?.message || "Registration failed")
     } finally {
@@ -72,41 +80,36 @@ export default function RegisterPage() {
             </div>
             <span className="text-2xl font-bold text-foreground">SoulSupport</span>
           </Link>
-          <p className="text-muted-foreground mt-1.5">Create your anonymous account</p>
+          <p className="text-muted-foreground mt-1.5">Create your account</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle><center>SoulSupport</center></CardTitle>
-            <CardDescription><center>No personal data required</center></CardDescription>
+            <CardTitle className="text-center">SoulSupport</CardTitle>
+            <CardDescription className="text-center">
+              Create your account
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form className="space-y-3" onSubmit={onSubmit}>
 
-              {/* Username */}
-              <div>
-                <Label htmlFor="username">Username *</Label>
-                <Input id="username" type="text" placeholder="Choose a unique username" />
-              </div>
-
               {/* Nickname */}
               <div>
-                <Label htmlFor="nickname">Nickname *</Label>
+                <Label>Nickname *</Label>
                 <Input
-                  id="nickname"
-                  type="text"
                   placeholder="This name will appear on dashboard"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                 />
               </div>
+
+              {/* Email */}
               <div>
-                <Label htmlFor="Email">Email </Label>
+                <Label>Email *</Label>
                 <Input
-                  id="email"
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -114,12 +117,11 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div>
-                <Label htmlFor="password">Password *</Label>
+                <Label>Password *</Label>
                 <div className="relative">
                   <Input
-                    id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
+                    placeholder="Create password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -127,7 +129,7 @@ export default function RegisterPage() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -137,12 +139,11 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div>
-                <Label htmlFor="confirm-password">Confirm Password *</Label>
+                <Label>Confirm Password *</Label>
                 <div className="relative">
                   <Input
-                    id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Re-enter your password"
+                    placeholder="Re-enter password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
@@ -150,42 +151,47 @@ export default function RegisterPage() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </Button>
                 </div>
               </div>
 
+              {/* ❌ ROLE REMOVED */}
+
+              {/* Error */}
               {error && <div className="text-sm text-red-600">{error}</div>}
 
+              {/* Submit */}
               <Button type="submit" className="w-full">
                 {loading ? "Creating..." : "Create Account"}
               </Button>
+
+              {/* Back */}
               <Button
-  type="button"
-  variant="outline"
-  className="w-full"
-  onClick={() => router.back()}
->
-  Back
-</Button>
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => router.back()}
+              >
+                Back
+              </Button>
             </form>
 
+            {/* Login Link */}
             <div className="mt-6 text-center">
-  <div className="text-sm text-muted-foreground">
-    {t("AlreadyHaveAccount")}{" "}
-    <Link href="/login" className="text-primary hover:underline">
-      {t("SignIn")}
-    </Link>
-  </div>
-</div>
-
+              <div className="text-sm text-muted-foreground">
+                {t("AlreadyHaveAccount")}{" "}
+                <Link href="/login" className="text-primary hover:underline">
+                  {t("SignIn")}
+                </Link>
+              </div>
+            </div>
 
           </CardContent>
         </Card>
-
       </div>
     </div>
   )

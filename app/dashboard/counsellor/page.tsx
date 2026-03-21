@@ -1,6 +1,11 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
+
 import {
   Stethoscope,
   Calendar,
@@ -13,23 +18,49 @@ import {
   TrendingUp,
   Phone,
 } from "lucide-react"
+import { useState } from "react";
 
 export default function CounsellorDashboard() {
+  const router = useRouter()
+  const [stats, setStats] = useState({
+  totalClients: 0,
+  todayAppointments: 0,
+  completedSessions: 0,
+  priorityCases: 0,
+});
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/20 dark:to-cyan-950/20">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-primary rounded-lg p-2">
-                <Stethoscope className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Dr. Emily Johnson</h1>
-                <p className="text-muted-foreground">Clinical Psychologist • License #PSY12345</p>
-              </div>
-            </div>
+         <div className="flex items-center space-x-3">
+
+  {/* 🔙 Back Button */}
+  <button
+    onClick={() => router.back()}
+    className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 hover:bg-green-200 transition"
+  >
+    <ArrowLeft className="h-5 w-5 text-green-700" />
+  </button>
+
+  <div className="bg-primary rounded-lg p-2">
+    <Stethoscope className="h-6 w-6 text-primary-foreground" />
+  </div>
+
+  <div>
+    <h1 className="text-2xl font-bold text-foreground">
+      Dr. Emily Johnson
+    </h1>
+    <p className="text-muted-foreground">
+      Clinical Psychologist • License #PSY12345
+    </p>
+  </div>
+
+</div>
+
             <div className="flex items-center space-x-2">
               <Badge className="bg-green-500">Available</Badge>
               <Button variant="outline" size="sm">
@@ -49,7 +80,7 @@ export default function CounsellorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Active Clients</p>
-                  <p className="text-3xl font-bold">47</p>
+                  <p className="text-3xl font-bold">{stats.totalClients}</p>
                   <p className="text-xs text-blue-600 flex items-center mt-1">
                     <Users className="h-3 w-3 mr-1" />3 new this week
                   </p>
@@ -64,9 +95,9 @@ export default function CounsellorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Today's Sessions</p>
-                  <p className="text-3xl font-bold">6</p>
+                  <p className="text-3xl font-bold">{stats.todayAppointments}</p>
                   <p className="text-xs text-green-600 flex items-center mt-1">
-                    <CheckCircle className="h-3 w-3 mr-1" />2 completed
+                    <CheckCircle className="h-3 w-3 mr-1" />{stats.completedSessions}
                   </p>
                 </div>
                 <Calendar className="h-8 w-8 text-green-500" />
@@ -95,7 +126,7 @@ export default function CounsellorDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Priority Cases</p>
-                  <p className="text-3xl font-bold">2</p>
+                  <p className="text-3xl font-bold">{stats.priorityCases}</p>
                   <p className="text-xs text-red-600 flex items-center mt-1">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     Needs attention
@@ -152,10 +183,13 @@ export default function CounsellorDashboard() {
                         </p>
                       </div>
                       <div className="space-x-2">
-                        <Button size="sm" variant="outline">
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          Message
-                        </Button>
+                        <Button
+  onClick={() => router.push("/messages")}
+>
+  <MessageCircle className="h-4 w-4 mr-1" />
+  Message
+</Button>
+
                         <Button size="sm" variant="outline">
                           Schedule
                         </Button>
@@ -260,22 +294,42 @@ export default function CounsellorDashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full justify-start">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Schedule Appointment
-                </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Add Session Notes
-                </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <Users className="h-4 w-4 mr-2" />
-                  View All Clients
-                </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
+                <Button
+                    className="w-full justify-start"
+                      onClick={() => router.push("/appointments")}
+                       >
+                     <Calendar className="h-4 w-4 mr-2" />
+                         Schedule Appointment
+                          </Button>
+
+                <Button 
+  variant="outline" 
+  className="w-full justify-start bg-transparent"
+  onClick={() => router.push("/notes")}
+>
+  <FileText className="h-4 w-4 mr-2" />
+  Add Session Notes
+</Button>
+
+                <Button 
+  variant="outline" 
+  className="w-full justify-start bg-transparent"
+  onClick={() => router.push("/clients")}
+>
+  <Users className="h-4 w-4 mr-2" />
+  View All Clients
+</Button>
+
+                <Button 
+  variant="outline"
+  className="w-full justify-start bg-transparent"
+  onClick={() => router.push("/messages")}
+>
+  <MessageCircle className="h-4 w-4 mr-2" />
+  Send Message
+</Button>
+
+
               </CardContent>
             </Card>
 

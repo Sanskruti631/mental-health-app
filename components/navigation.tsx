@@ -42,8 +42,8 @@ export function Navigation() {
       case "admin":
         return [
           { name: t("Dashboard"), href: "/dashboard", icon: BarChart3 },
-          { name: t("UserManagement"), href: "/admin/users", icon: Users },
-          { name: t("Analytics"), href: "/admin/analytics", icon: BarChart3 },
+          { name: t("UserManagement"), href: "/dashboard/admin/users", icon: Users },
+         
         ];
 
       case "therapist":

@@ -1,6 +1,8 @@
 "use client"
 
 import type React from "react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -35,6 +37,7 @@ interface Message {
 }
 
 export function ChatInterface() {
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -242,10 +245,27 @@ export function ChatInterface() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">AI Mental Health Dashboard</h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Your personalized support session with real-time insights
-          </p>
+          <div className="relative mb-8">
+  {/* Back Button */}
+  <button
+    onClick={() => router.back()}
+    className="absolute left-0 top-0 p-2 rounded-full hover:bg-gray-200 transition"
+  >
+    <ArrowLeft className="h-5 w-5 text-gray-700" />
+  </button>
+
+  {/* Title */}
+  <div className="text-center">
+    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+      AI Mental Health Dashboard
+    </h1>
+    <p className="text-gray-600 text-sm sm:text-base">
+      Your personalized support session with real-time insights
+    </p>
+  </div>
+</div>
+
+          
         </div>
 
         {hasCrisisMessage && (
