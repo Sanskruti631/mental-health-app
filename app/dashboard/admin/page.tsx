@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion, easeInOut } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -85,7 +86,176 @@ const cardVariants = {
   },
 }
 
+function generateReport(statsData: any, usersInfo: any, counselorsInfo: any, analyticsInfo: any) {
+  const reportData = {
+    generatedAt: new Date().toLocaleString(),
+    reportPeriod: "Monthly Report",
+    metrics: {
+      totalStudents: statsData.totalStudents,
+      activeCounselors: statsData.activeCounselors,
+      weekSessions: statsData.weekSessions,
+      crisisAlerts: statsData.crisisAlerts,
+      aiChats: statsData.aiChats,
+    },
+    counselorStats: {
+      total: counselorsInfo.totalCounselors,
+      activeNow: counselorsInfo.activeNow,
+      inSession: counselorsInfo.inSession,
+      offline: counselorsInfo.offline,
+    },
+    analyticsMetrics: analyticsInfo.metrics,
+  }
+
+  // Create CSV content
+  let csvContent = "SOUL SUPPORT - ADMIN DASHBOARD REPORT\n"
+  csvContent += `Generated: ${reportData.generatedAt}\n`
+  csvContent += `Period: ${reportData.reportPeriod}\n\n`
+
+  csvContent += "=== KEY METRICS ===\n"
+  Object.entries(reportData.metrics).forEach(([key, value]) => {
+    csvContent += `${key.replace(/([A-Z])/g, " $1").toUpperCase()},${value}\n`
+  })
+
+  csvContent += "\n=== COUNSELOR STATISTICS ===\n"
+  Object.entries(reportData.counselorStats).forEach(([key, value]) => {
+    csvContent += `${key.replace(/([A-Z])/g, " $1").toUpperCase()},${value}\n`
+  })
+
+  csvContent += "\n=== ANALYTICS METRICS ===\n"
+  Object.entries(reportData.analyticsMetrics).forEach(([key, value]) => {
+    csvContent += `${key.replace(/([A-Z])/g, " $1").toUpperCase()},${value}\n`
+  })
+
+  // Create blob and download
+  const element = document.createElement("a")
+  const file = new Blob([csvContent], { type: "text/csv" })
+  element.href = URL.createObjectURL(file)
+  element.download = `SoulSupport_Report_${new Date().toISOString().split("T")[0]}.csv`
+  document.body.appendChild(element)
+  element.click()
+  document.body.removeChild(element)
+}
+
 export default function AdminDashboard() {
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [activeSection, setActiveSection] = useState<"dashboard" | "users" | "counselors" | "analytics" | null>(null)
+  const [showModal, setShowModal] = useState(false)
+
+  // Data states
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    activeCounselors: 0,
+    weekSessions: 0,
+    crisisAlerts: 0,
+    aiChats: 0,
+  })
+  const [usersData, setUsersData] = useState({ stats: { totalUsers: 0, activeToday: 0, pendingApproval: 0 }, users: [] })
+  const [counselorsData, setCounselorsData] = useState({ 
+    totalCounselors: 0, 
+    activeNow: 0, 
+    inSession: 0, 
+    offline: 0,
+    counselors: [] 
+  })
+  const [analyticsData, setAnalyticsData] = useState({
+    metrics: { engagementRate: 0, userGrowth: 0, avgSessionDuration: 0, satisfactionScore: 0 },
+    featureUsage: { wellnessGames: 0, aiChat: 0, assessments: 0, resources: 0 },
+    timeDistribution: { peakHours: "6-9 PM", avgDailyActive: 0 },
+  })
+  const [loading, setLoading] = useState(true)
+
+  // Fetch stats on mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/admin/stats")
+        const data = await res.json()
+        setStats(data)
+        setLoading(false)
+      } catch (error) {
+        console.error("Failed to fetch stats:", error)
+        setLoading(false)
+      }
+    }
+    fetchStats()
+  }, [])
+
+  // Fetch users data when users modal opens
+  useEffect(() => {
+    if (activeSection === "users") {
+      const fetchUsers = async () => {
+        try {
+          const res = await fetch("/api/admin/users")
+          const data = await res.json()
+          setUsersData(data)
+        } catch (error) {
+          console.error("Failed to fetch users:", error)
+        }
+      }
+      fetchUsers()
+    }
+  }, [activeSection])
+
+  // Fetch counselors data when counselors modal opens
+  useEffect(() => {
+    if (activeSection === "counselors") {
+      const fetchCounselors = async () => {
+        try {
+          const res = await fetch("/api/admin/counselors")
+          const data = await res.json()
+          setCounselorsData(data)
+        } catch (error) {
+          console.error("Failed to fetch counselors:", error)
+        }
+      }
+      fetchCounselors()
+    }
+  }, [activeSection])
+
+  // Fetch analytics data when analytics modal opens
+  useEffect(() => {
+    if (activeSection === "analytics") {
+      const fetchAnalytics = async () => {
+        try {
+          const res = await fetch("/api/admin/analytics")
+          const data = await res.json()
+          setAnalyticsData(data)
+        } catch (error) {
+          console.error("Failed to fetch analytics:", error)
+        }
+      }
+      fetchAnalytics()
+    }
+  }, [activeSection])
+
+  const handleGenerateReport = () => {
+    setIsGenerating(true)
+    // Simulate processing time
+    setTimeout(() => {
+      generateReport(stats, usersData, counselorsData, analyticsData)
+      setIsGenerating(false)
+    }, 500)
+  }
+
+  const handleManageUsers = () => {
+    setActiveSection("users")
+    setShowModal(true)
+  }
+
+  const handleCounselorApproval = () => {
+    setActiveSection("counselors")
+    setShowModal(true)
+  }
+
+  const handleViewAnalytics = () => {
+    setActiveSection("analytics")
+    setShowModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setActiveSection(null)
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20">
       {/* Header */}
@@ -108,9 +278,9 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-2">
               <Badge variant="outline">Online</Badge>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleGenerateReport} disabled={isGenerating}>
                 <FileText className="h-4 w-4 mr-2" />
-                Generate Report
+                {isGenerating ? "Generating..." : "Generate Report"}
               </Button>
             </div>
           </div>
@@ -132,7 +302,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total Students</p>
                     <p className="text-3xl font-bold">
-                      <AnimatedCounter end={2847} />
+                      <AnimatedCounter end={stats.totalStudents} />
                     </p>
                     <p className="text-xs text-green-600 flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 mr-1" />
@@ -152,11 +322,11 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Active Counselors</p>
                     <p className="text-3xl font-bold">
-                      <AnimatedCounter end={24} />
+                      <AnimatedCounter end={stats.activeCounselors} />
                     </p>
                     <p className="text-xs text-blue-600 flex items-center mt-1">
                       <UserCheck className="h-3 w-3 mr-1" />
-                      18 available now
+                      {stats.activeCounselors - 6} available now
                     </p>
                   </div>
                   <UserCheck className="h-8 w-8 text-green-500" />
@@ -172,11 +342,11 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">This Week's Sessions</p>
                     <p className="text-3xl font-bold">
-                      <AnimatedCounter end={156} />
+                      <AnimatedCounter end={stats.weekSessions} />
                     </p>
                     <p className="text-xs text-orange-600 flex items-center mt-1">
                       <Calendar className="h-3 w-3 mr-1" />
-                      32 scheduled today
+                      {Math.round(stats.weekSessions / 7)} scheduled today
                     </p>
                   </div>
                   <Calendar className="h-8 w-8 text-purple-500" />
@@ -192,7 +362,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Crisis Alerts</p>
                     <p className="text-3xl font-bold">
-                      <AnimatedCounter end={3} />
+                      <AnimatedCounter end={stats.crisisAlerts} />
                     </p>
                     <p className="text-xs text-red-600 flex items-center mt-1">
                       <AlertTriangle className="h-3 w-3 mr-1" />
@@ -642,27 +812,27 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button className="w-full justify-start">
+                  <Button className="w-full justify-start" onClick={handleManageUsers}>
                     <Users className="h-4 w-4 mr-2" />
                     Manage Users
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleCounselorApproval}>
                     <UserCheck className="h-4 w-4 mr-2" />
                     Counselor Approval
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleViewAnalytics}>
                     <BarChart3 className="h-4 w-4 mr-2" />
                     View Analytics
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
+                  <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleGenerateReport} disabled={isGenerating}>
                     <FileText className="h-4 w-4 mr-2" />
-                    Generate Reports
+                    {isGenerating ? "Generating..." : "Generate Reports"}
                   </Button>
                 </motion.div>
               </CardContent>
@@ -722,6 +892,252 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* Modal Overlay */}
+      {showModal && (
+        <motion.div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={closeModal}
+        >
+          <motion.div
+            className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Users Management Modal */}
+            {activeSection === "users" && (
+              <div>
+                <div className="sticky top-0 bg-white dark:bg-gray-900 border-b p-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Manage Users</h2>
+                  <Button variant="ghost" size="sm" onClick={closeModal}>✕</Button>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Total Users</p>
+                        <p className="text-3xl font-bold">{usersData.stats.totalUsers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Active Today</p>
+                        <p className="text-3xl font-bold">{usersData.stats.activeToday}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Pending Approval</p>
+                        <p className="text-3xl font-bold">{usersData.stats.pendingApproval}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Recent Users</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {usersData.users.length > 0 ? (
+                          usersData.users.map((user: any) => (
+                            <motion.div
+                              key={user.id}
+                              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg"
+                              whileHover={{ x: 5 }}
+                            >
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Badge variant={user.status === "Active" ? "default" : "outline"}>
+                                  {user.status}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {user.joinDate ? new Date(user.joinDate).toLocaleDateString() : "N/A"}
+                                </span>
+                              </div>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <p className="text-center text-muted-foreground">No users found</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Button className="w-full" onClick={closeModal}>Close</Button>
+                </div>
+              </div>
+            )}
+
+            {/* Counselor Approval Modal */}
+            {activeSection === "counselors" && (
+              <div>
+                <div className="sticky top-0 bg-white dark:bg-gray-900 border-b p-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Counselor Availability</h2>
+                  <Button variant="ghost" size="sm" onClick={closeModal}>✕</Button>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Total Counselors</p>
+                        <p className="text-3xl font-bold">{counselorsData.totalCounselors}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Available Now</p>
+                        <p className="text-3xl font-bold">{counselorsData.activeNow}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">In Session</p>
+                        <p className="text-3xl font-bold text-orange-600">{counselorsData.inSession}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Counselor Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {counselorsData.counselors.length > 0 ? (
+                          counselorsData.counselors.map((c: any) => (
+                            <motion.div
+                              key={c.id}
+                              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg"
+                              whileHover={{ x: 5 }}
+                            >
+                              <div>
+                                <p className="font-medium">{c.name}</p>
+                                <p className="text-xs text-muted-foreground">{c.email}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge 
+                                  variant={c.availability === "Available" ? "default" : "secondary"}
+                                >
+                                  {c.availability}
+                                </Badge>
+                              </div>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <p className="text-center text-muted-foreground">No counselors found</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Button className="w-full" onClick={closeModal}>Close</Button>
+                </div>
+              </div>
+            )}
+
+            {/* Analytics Modal */}
+            {activeSection === "analytics" && (
+              <div>
+                <div className="sticky top-0 bg-white dark:bg-gray-900 border-b p-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Analytics Dashboard</h2>
+                  <Button variant="ghost" size="sm" onClick={closeModal}>✕</Button>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Engagement Rate</p>
+                        <p className="text-3xl font-bold text-blue-600">{analyticsData.metrics.engagementRate}%</p>
+                        <p className="text-xs text-green-600 flex items-center mt-2">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          +12% from last month
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">User Growth</p>
+                        <p className="text-3xl font-bold text-green-600">+{analyticsData.metrics.userGrowth}</p>
+                        <p className="text-xs text-green-600 flex items-center mt-2">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          This month
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Avg Session Duration</p>
+                        <p className="text-3xl font-bold text-purple-600">{analyticsData.metrics.avgSessionDuration}m</p>
+                        <p className="text-xs text-muted-foreground">Therapy Sessions</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Satisfaction Score</p>
+                        <p className="text-3xl font-bold text-orange-600">{analyticsData.metrics.satisfactionScore}/5</p>
+                        <p className="text-xs text-muted-foreground">Based on reviews</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Top Features by Usage</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          { feature: "Wellness Games", usage: analyticsData.featureUsage.wellnessGames, percent: 35 },
+                          { feature: "AI Chat Support", usage: analyticsData.featureUsage.aiChat, percent: 28 },
+                          { feature: "Assessments", usage: analyticsData.featureUsage.assessments, percent: 22 },
+                          { feature: "Resource Hub", usage: analyticsData.featureUsage.resources, percent: 15 },
+                        ].map((item, idx) => (
+                          <motion.div key={idx} whileHover={{ x: 5 }}>
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-sm font-medium">{item.feature}</p>
+                              <p className="text-sm text-muted-foreground">{item.usage.toLocaleString()} users</p>
+                            </div>
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                              <motion.div
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${item.percent}%` }}
+                                transition={{ duration: 1 }}
+                              />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Time Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Peak Hours</p>
+                          <p className="text-2xl font-bold">{analyticsData.timeDistribution.peakHours}</p>
+                        </div>
+                        <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Avg Daily Active</p>
+                          <p className="text-2xl font-bold">{analyticsData.timeDistribution.avgDailyActive}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Button className="w-full" onClick={closeModal}>Close</Button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
