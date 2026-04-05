@@ -282,7 +282,7 @@ export default function QuizWithSidebarPage() {
               </h2>
 
               <div className="space-y-3">
-                {currentQuestion.options.map((opt) => {
+                {currentQuestion.options.map((opt: { value: number; label: string }) => {
                   const isActive = selected === opt.value;
                   return (
                     <button
