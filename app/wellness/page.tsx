@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Play, Pause, RotateCcw, Leaf, Moon, Zap, Users, Phone } from "lucide-react"
+import { Play, Pause, RotateCcw, Leaf, Moon, Zap, Phone } from "lucide-react"
 
 const breathingExercises = [
   {
@@ -79,21 +79,73 @@ const wellnessTips = [
       "Keep healthy snacks handy",
     ],
   },
-  {
-    category: "Social",
-    icon: Users,
-    tips: [
-      "Connect with friends regularly",
-      "Join study groups or clubs",
-      "Practice active listening",
-      "Set healthy boundaries",
-    ],
-  },
 ]
 
 export default function WellnessPage() {
   const [activeTimer, setActiveTimer] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState(0)
+  const [meditations, setMeditations] = useState<any[]>([])
+  const [playingMeditation, setPlayingMeditation] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchMeditations = async () => {
+      try {
+        const res = await fetch("/api/wellness/meditations")
+        if (res.ok) {
+          const data = await res.json()
+          setMeditations(data)
+        }
+      } catch (error) {
+        console.error("Error fetching meditations:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMeditations()
+  }, [])
+
+  // Timer effect for breathing exercises and guided meditations
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
+    if (activeTimer && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setActiveTimer(null)
+            setPlayingMeditation(null)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [activeTimer, timeLeft])
+
+  const handlePlayMeditation = (meditation: any) => {
+    if (meditation.hasAudio) {
+      // For future audio implementation
+      alert(`Audio meditation: ${meditation.name} - Coming soon!`)
+    } else {
+      // For guided meditations without audio, start a timer session
+      if (playingMeditation === meditation.id) {
+        setPlayingMeditation(null)
+        setActiveTimer(null)
+        setTimeLeft(0)
+      } else {
+        setPlayingMeditation(meditation.id)
+        // Start a timer for the meditation duration
+        const duration = parseInt(meditation.duration.split(' ')[0]) * 60 // Convert minutes to seconds
+        setActiveTimer(meditation.id)
+        setTimeLeft(duration)
+      }
+    }
+  }
 
   const startBreathing = (exerciseId: string, duration: number) => {
     setActiveTimer(exerciseId)
@@ -146,7 +198,7 @@ export default function WellnessPage() {
             </div>
 
             {/* Breathing Timer */}
-            {activeTimer && (
+            {activeTimer && activeTimer !== playingMeditation && (
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
                 <CardContent className="p-8 text-center">
                   <div className="space-y-6">
@@ -168,30 +220,83 @@ export default function WellnessPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Meditation Timer */}
+            {playingMeditation && activeTimer === playingMeditation && (
+              <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                <CardContent className="p-8 text-center">
+                  <div className="space-y-6">
+                    <div className="text-6xl font-bold text-primary">
+                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
+                    </div>
+                    <div className="text-xl text-muted-foreground">
+                      Guided meditation in progress...
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Follow along with the instructions below
+                    </div>
+                    <div className="flex justify-center space-x-4">
+                      <Button variant="outline" onClick={() => {
+                        setPlayingMeditation(null)
+                        setActiveTimer(null)
+                        setTimeLeft(0)
+                      }}>
+                        <Pause className="h-4 w-4 mr-2" />
+                        End Session
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Meditation */}
           <TabsContent value="meditation" className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              {meditations.map((meditation) => (
-                <Card key={meditation.id}>
-                  <CardHeader>
-                    <CardTitle>{meditation.name}</CardTitle>
-                    <CardDescription>{meditation.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <Badge variant="outline">{meditation.duration}</Badge>
-                      <Badge variant="secondary">{meditation.category}</Badge>
-                    </div>
-                    <Button className="w-full">
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Meditation
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {loading ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">Loading meditations...</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-6">
+                {meditations.map((meditation) => (
+                  <Card key={meditation.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">{meditation.name}</CardTitle>
+                      <CardDescription>{meditation.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <Badge variant="outline">{meditation.duration}</Badge>
+                        <Badge variant="secondary">{meditation.category}</Badge>
+                      </div>
+                      <div className="p-2 bg-muted rounded text-sm">
+                        <p className="text-muted-foreground">Instructor: {meditation.instructor}</p>
+                      </div>
+                      <Button 
+                        className="w-full"
+                        onClick={() => handlePlayMeditation(meditation)}
+                        variant={playingMeditation === meditation.id ? "default" : "default"}
+                      >
+                        {playingMeditation === meditation.id ? (
+                          <>
+                            <Pause className="h-4 w-4 mr-2" />
+                            {meditation.hasAudio ? "Playing..." : "In Progress..."}
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            {meditation.hasAudio ? "Play Audio" : "Start Guided Session"}
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Wellness Tips */}
