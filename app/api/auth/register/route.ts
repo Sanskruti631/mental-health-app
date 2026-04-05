@@ -5,9 +5,9 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name } = await req.json();
+    const { email, password, name, role = "student", licenseNumber, yearsExperience, bio } = await req.json();
 
-    // ❌ Removed role from request
+    // ✅ Accept role from request (defaults to "student")
     if (!email || !password || !name) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
@@ -15,8 +15,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ FORCE ROLE = STUDENT
-    const role = "student";
+    // ✅ Validate role
+    if (!["student", "therapist", "admin"].includes(role)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid role" },
+        { status: 400 }
+      );
+    }
 
     // Check existing user
     const existingUser = await prisma.users.findUnique({
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
     const userId = randomUUID();
     const passwordHash = await bcrypt.hash(String(password), 10);
 
-    // ✅ Transaction (ONLY STUDENT PROFILE)
+    // ✅ Transaction - create appropriate profile based on role
     const newUser = await prisma.$transaction(async (tx) => {
       const user = await tx.users.create({
         data: {
@@ -42,20 +47,42 @@ export async function POST(req: Request) {
           email,
           password_hash: passwordHash,
           name,
-          role, // always student
+          role, // Use the provided role
           is_active: true,
           is_verified: false,
         },
       });
 
-      // ✅ ONLY student profile created
-      await tx.student_profiles.create({
-        data: {
-          user_id: userId,
-          student_id: `STU-${randomUUID().slice(0, 8)}`,
-          admin_id: "SYSTEM",
-        },
-      });
+      // ✅ Create profile based on role
+      if (role === "student") {
+        await tx.student_profiles.create({
+          data: {
+            user_id: userId,
+            student_id: `STU-${randomUUID().slice(0, 8)}`,
+            admin_id: "SYSTEM",
+          },
+        });
+      } else if (role === "therapist") {
+        // For therapist, create therapist profile
+        await tx.therapist_profiles.create({
+          data: {
+            user_id: userId,
+            license_number: licenseNumber || `LIC-${randomUUID().slice(0, 8)}`,
+            years_experience: yearsExperience || "0",
+            bio: bio || "",
+            is_accepting_patients: true,
+          },
+        });
+      } else if (role === "admin") {
+        // For admin, create admin profile
+        await tx.admin_profiles.create({
+          data: {
+            user_id: userId,
+            college_name: "System Admin",
+            college_id: `COL-${randomUUID().slice(0, 8)}`,
+          },
+        });
+      }
 
       return user;
     });

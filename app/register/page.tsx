@@ -23,6 +23,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [nickname, setNickname] = useState("")
+  const [role, setRole] = useState<"student" | "therapist">("student")
+  const [licenseNumber, setLicenseNumber] = useState("")
+  const [yearsExperience, setYearsExperience] = useState("")
+  const [bio, setBio] = useState("")
 
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -33,6 +37,11 @@ export default function RegisterPage() {
 
     if (!email || !password || !confirmPassword || !nickname) {
       setError("Please fill all required fields")
+      return
+    }
+
+    if (role === "therapist" && !licenseNumber) {
+      setError("License number is required for therapists")
       return
     }
 
@@ -49,11 +58,18 @@ export default function RegisterPage() {
         password,
         confirmPassword,
         name: nickname,
-        userType: "student", // ✅ fixed role
+        userType: role,
+        licenseNumber: role === "therapist" ? licenseNumber : undefined,
+        yearsExperience: role === "therapist" ? yearsExperience : undefined,
+        bio: role === "therapist" ? bio : undefined,
       } as any)
 
-      // ✅ Always redirect student
-      router.push("/chat")
+      // ✅ Role-based redirect
+      if (role === "therapist") {
+        router.push("/therapist-dashboard")
+      } else {
+        router.push("/chat")
+      }
 
     } catch (err: any) {
       setError(err?.message || "Registration failed")
@@ -115,6 +131,52 @@ export default function RegisterPage() {
                 />
               </div>
 
+              {/* Role Selection */}
+              <div>
+                <Label>Account Type *</Label>
+                <select
+                  className="w-full border rounded-md p-2 bg-white dark:bg-slate-900"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as any)}
+                >
+                  <option value="student">Student</option>
+                  <option value="therapist">Therapist</option>
+                </select>
+              </div>
+
+              {/* Therapist Fields */}
+              {role === "therapist" && (
+                <>
+                  <div>
+                    <Label>License Number *</Label>
+                    <Input
+                      placeholder="Your professional license number"
+                      value={licenseNumber}
+                      onChange={(e) => setLicenseNumber(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Years of Experience</Label>
+                    <Input
+                      placeholder="e.g., 5+"
+                      value={yearsExperience}
+                      onChange={(e) => setYearsExperience(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Bio</Label>
+                    <textarea
+                      className="w-full border rounded-md p-2 min-h-20"
+                      placeholder="Brief professional bio"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Password */}
               <div>
                 <Label>Password *</Label>
@@ -158,8 +220,6 @@ export default function RegisterPage() {
                   </Button>
                 </div>
               </div>
-
-              {/* ❌ ROLE REMOVED */}
 
               {/* Error */}
               {error && <div className="text-sm text-red-600">{error}</div>}
