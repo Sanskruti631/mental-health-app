@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { User, Settings, LogOut, Shield, Stethoscope, GraduationCap, ChevronDown, Loader2 } from "lucide-react"
+import { User, Settings, LogOut, Shield, Stethoscope, GraduationCap, ChevronDown, Loader2, Cpu, BookOpen } from "lucide-react"
 
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
@@ -65,7 +65,7 @@ export function UserMenu() {
   const getDashboardLink = () => {
     switch (user.role) {
       case "student":
-        return "/chat"
+        return "/dashboard/student"
       case "admin":
         return "/dashboard"
       case "therapist":
@@ -111,16 +111,32 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link href={getDashboardLink()} className="flex items-center">
+          <Link href={getDashboardLink()} className="flex items-center cursor-pointer">
             {getRoleIcon()}
             <span className="ml-2">Dashboard</span>
           </Link>
         </DropdownMenuItem>
 
-       
+        {user.role === "student" && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/chat" className="flex items-center cursor-pointer">
+                <Cpu className="h-4 w-4" />
+                <span className="ml-2">AI Chatbot</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link href="/resources" className="flex items-center cursor-pointer">
+                <BookOpen className="h-4 w-4" />
+                <span className="ml-2">Resources</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex items-center">
+          <Link href="/settings" className="flex items-center cursor-pointer">
             <Settings className="h-4 w-4" />
             <span className="ml-2">Settings</span>
           </Link>
@@ -128,7 +144,7 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut} className="text-red-600 focus:text-red-600">
+        <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut} className="text-red-600 focus:text-red-600 cursor-pointer">
           {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
           <span className="ml-2">{isLoggingOut ? "Signing out..." : "Sign out"}</span>
         </DropdownMenuItem>

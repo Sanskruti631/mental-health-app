@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { AnimatedCounter } from "@/components/animated-counter"
 import { Heart, MessageCircle, Calendar, BookOpen, AlertCircle, Phone, Users, Brain, Activity } from "lucide-react"
 import Link from "next/link"
+import { UserMenu } from "@/components/user-menu"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -133,6 +134,7 @@ export default function StudentDashboard() {
                 <Phone className="h-4 w-4 mr-2" />
                 Crisis Support
               </Button>
+              <UserMenu />
             </div>
           </div>
         </div>

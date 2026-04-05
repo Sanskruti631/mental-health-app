@@ -11,7 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { User, Shield, Save, Upload, CheckCircle, AlertTriangle, GraduationCap, Stethoscope } from "lucide-react"
+import { User, Shield, Save, Upload, CheckCircle, AlertTriangle, GraduationCap, Stethoscope, Cpu, BookOpen, Settings } from "lucide-react"
+import Link from "next/link"
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth()
@@ -160,6 +161,36 @@ export default function ProfilePage() {
                 </Button>
               </CardContent>
             </Card>
+
+            {user && user.role === "student" && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    Quick Access
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Link href="/chat">
+                    <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-sm h-10">
+                      <Cpu className="h-4 w-4 text-emerald-600" />
+                      AI Chatbot
+                    </Button>
+                  </Link>
+                  <Link href="/resources">
+                    <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-sm h-10">
+                      <BookOpen className="h-4 w-4 text-emerald-600" />
+                      Resources
+                    </Button>
+                  </Link>
+                  <Link href="/settings">
+                    <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-sm h-10">
+                      <Settings className="h-4 w-4 text-emerald-600" />
+                      Settings
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Profile Details */}

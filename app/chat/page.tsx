@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChatInterface } from "@/components/chat-interface"
 import { ChatSidebar } from "@/components/chat-sidebar"
+import { WellnessSidebar } from "@/components/wellness-sidebar"
 
 interface ChatSession {
   id: string
@@ -82,7 +83,8 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex bg-background">
+    <div className="h-screen flex bg-background overflow-hidden">
+      <WellnessSidebar />
       {/* Sidebar */}
       <ChatSidebar
         sessions={sessions}
@@ -97,7 +99,7 @@ export default function ChatPage() {
       />
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <ChatInterface
           sessionId={activeSessionId}
           isDarkMode={isDarkMode}

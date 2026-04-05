@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { WellnessSidebar } from "@/components/wellness-sidebar";
 
 export default function QuizWithSidebarPage() {
   const router = useRouter();
@@ -174,72 +175,9 @@ export default function QuizWithSidebarPage() {
 
   return (
     <div className="min-h-screen flex bg-emerald-50">
-      <aside className="w-72 bg-white/90 border-r border-gray-100 p-6 hidden md:flex flex-col gap-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold">
-            SS
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">SoulSupport</h3>
-            <p className="text-sm text-muted-foreground">Wellness Dashboard</p>
-          </div>
-        </div>
+      <WellnessSidebar />
 
-        <nav className="flex-1">
-          <ul className="space-y-2">
-            <li>
-              <Link
-                href="/quiz"
-                className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100"
-              >
-                <Cpu className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium">Questionnaire</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/chat"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
-              >
-                <MessageCircle className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium">AI Chatbot</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/resources"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
-              >
-                <BookOpen className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium">Resources</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/settings"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"
-              >
-                <Settings className="w-5 h-5 text-emerald-600" />
-                <span className="font-medium">Settings</span>
-              </Link>
-            </li>
-          </ul>
-        </nav>
-
-        <div className="mt-auto">
-          <Button variant="ghost" className="w-full" asChild>
-            <Link href="/" className="w-full flex items-center justify-center">
-              <Home className="w-4 h-4 mr-2" />
-              Home
-            </Link>
-          </Button>
-        </div>
-      </aside>
-
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <div
           className="rounded-xl overflow-hidden mb-6 relative"
           style={{ height: 160 }}

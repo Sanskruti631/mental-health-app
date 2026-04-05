@@ -64,10 +64,7 @@ export function ChatSidebar({
       <div className="p-3 border-b border-border flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className={`flex items-center space-x-2 ${isCollapsed ? 'hidden' : ''}`}>
-            <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
-              <Bot className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-foreground text-sm">SoulSupport</span>
+            <span className="font-semibold text-foreground text-sm uppercase tracking-wider opacity-60">Conversations</span>
           </div>
 
           <div className="flex items-center space-x-1">
