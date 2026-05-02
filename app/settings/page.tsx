@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { Navigation } from "@/components/navigation"
+import { WellnessSidebar } from "@/components/wellness-sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -136,19 +136,17 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Navigation />
-      <div className="min-h-screen bg-background">
-        <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="min-h-screen flex bg-emerald-50 dark:bg-emerald-950/10">
+        <WellnessSidebar />
+        <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Manage your account, preferences, and security
-            </p>
+            <p className="text-muted-foreground mt-2">Manage your account preferences and application behavior</p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Sidebar */}
-            <nav className="md:w-56 flex-shrink-0">
+            <nav className="md:col-span-1">
               <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0">
                 {sidebarItems.map((item) => (
                   <button
@@ -168,7 +166,7 @@ export default function SettingsPage() {
             </nav>
 
             {/* Content */}
-            <div className="flex-1 min-w-0">
+            <div className="md:col-span-3">
               {/* Account Section */}
               {activeSection === "account" && (
                 <Card className="border-border">

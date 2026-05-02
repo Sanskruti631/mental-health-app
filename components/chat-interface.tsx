@@ -1,32 +1,31 @@
 "use client"
 
 import type React from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Send,
   Bot,
   User,
   AlertTriangle,
+  Mic,
+  MicOff,
+  Smile,
+  ThumbsUp,
   Heart,
-  Phone,
-  MessageCircle,
-  Activity,
-  Clock,
-  TrendingUp,
-  Brain,
-  Calendar,
+  Laugh,
+  Frown,
+  Angry,
+  Copy,
+  MoreVertical,
+  Volume2,
+  VolumeX
 } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface Message {
   id: string
@@ -34,10 +33,27 @@ interface Message {
   sender: "user" | "ai"
   timestamp: Date
   severity?: "low" | "medium" | "high" | "crisis"
+  reactions?: string[]
+  isTyping?: boolean
 }
 
-export function ChatInterface() {
-  const router = useRouter()
+interface ChatInterfaceProps {
+  sessionId: string
+  isDarkMode: boolean
+  onUpdateSession: (id: string, title: string, lastMessage: string) => void
+}
+
+// Helper function to format time consistently (server and client)
+const formatTime = (date: Date): string => {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  const paddedMinutes = minutes.toString().padStart(2, '0')
+  return `${displayHours}:${paddedMinutes} ${ampm}`
+}
+
+export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -49,9 +65,14 @@ export function ChatInterface() {
   ])
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const [activeTab, setActiveTab] = useState("chat")
   const [showBookingPopup, setShowBookingPopup] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Voice recognition
+  const recognitionRef = useRef<any>(null)
 
   // Crisis keywords for detection
   const crisisKeywords = [
@@ -165,6 +186,10 @@ export function ChatInterface() {
     setInputValue("")
     setIsTyping(true)
 
+    // Update session title and last message
+    const title = inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
+    onUpdateSession(sessionId, title, inputValue)
+
     if (severity === "high" || severity === "crisis") {
       setTimeout(() => setShowBookingPopup(true), 2000)
     }
@@ -181,6 +206,9 @@ export function ChatInterface() {
 
         setMessages((prev) => [...prev, aiResponse])
         setIsTyping(false)
+
+        // Update session with AI response
+        onUpdateSession(sessionId, title, aiResponse.content)
       },
       1000 + Math.random() * 2000,
     )
@@ -193,9 +221,89 @@ export function ChatInterface() {
     }
   }
 
+  // Voice input functionality
+  const startVoiceRecording = useCallback(() => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Voice recognition is not supported in this browser.')
+      return
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    recognitionRef.current = new SpeechRecognition()
+    recognitionRef.current.continuous = false
+    recognitionRef.current.interimResults = false
+    recognitionRef.current.lang = 'en-US'
+
+    recognitionRef.current.onstart = () => {
+      setIsRecording(true)
+    }
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInputValue(transcript)
+    }
+
+    recognitionRef.current.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current.start()
+  }, [])
+
+  const stopVoiceRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsRecording(false)
+    }
+  }, [])
+
+  // Emoji reactions
+  const emojis = [
+    { emoji: "👍", label: "thumbs up", icon: ThumbsUp },
+    { emoji: "❤️", label: "heart", icon: Heart },
+    { emoji: "😂", label: "laugh", icon: Laugh },
+    { emoji: "😢", label: "sad", icon: Frown },
+    { emoji: "😠", label: "angry", icon: Angry },
+  ]
+
+  const addReaction = (messageId: string, emoji: string) => {
+    setMessages(prev => prev.map(msg =>
+      msg.id === messageId
+        ? {
+            ...msg,
+            reactions: msg.reactions
+              ? msg.reactions.includes(emoji)
+                ? msg.reactions.filter(r => r !== emoji)
+                : [...msg.reactions, emoji]
+              : [emoji]
+          }
+        : msg
+    ))
+    setShowEmojiPicker(null)
+  }
+
+  // Copy message to clipboard
+  const copyMessage = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content)
+    } catch (err) {
+      console.error('Failed to copy message:', err)
+    }
+  }
+
+  // Text-to-speech
+  const speakMessage = (content: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(content)
+      utterance.rate = 0.9
+      utterance.pitch = 1
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages])
 
@@ -214,323 +322,229 @@ export function ChatInterface() {
 
   const hasCrisisMessage = messages.some((msg) => msg.severity === "crisis")
 
-  const chatStats = [
-    {
-      title: "Session Duration",
-      value: "12 min",
-      icon: Clock,
-      color: "text-blue-600",
-    },
-    {
-      title: "Messages Sent",
-      value: messages.filter((m) => m.sender === "user").length.toString(),
-      icon: MessageCircle,
-      color: "text-green-600",
-    },
-    {
-      title: "Support Level",
-      value: hasCrisisMessage ? "Crisis" : "Active",
-      icon: Activity,
-      color: hasCrisisMessage ? "text-red-600" : "text-emerald-600",
-    },
-    {
-      title: "Mood Trend",
-      value: "Improving",
-      icon: TrendingUp,
-      color: "text-purple-600",
-    },
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="text-center mb-8">
-          <div className="relative mb-8">
-  {/* Back Button */}
-  <button
-    onClick={() => router.back()}
-    className="absolute left-0 top-0 p-2 rounded-full hover:bg-gray-200 transition"
-  >
-    <ArrowLeft className="h-5 w-5 text-gray-700" />
-  </button>
-
-  {/* Title */}
-  <div className="text-center">
-    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-      AI Mental Health Dashboard
-    </h1>
-    <p className="text-gray-600 text-sm sm:text-base">
-      Your personalized support session with real-time insights
-    </p>
-  </div>
-</div>
-
-          
+    <div className="h-full flex flex-col bg-background">
+      {/* Crisis Alert */}
+      {hasCrisisMessage && (
+        <div className="bg-destructive/90 backdrop-blur-sm text-destructive-foreground p-4 text-center animate-pulse border-b border-destructive/20">
+          <AlertTriangle className="h-6 w-6 inline mr-2" />
+          <span className="font-semibold">Immediate Help Available</span>
+          <div className="mt-2 text-sm">
+            <div>Call 988 (Suicide & Crisis Lifeline) or Text HOME to 741741</div>
+          </div>
         </div>
+      )}
 
-        {hasCrisisMessage && (
-          <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 dark:text-red-200">
-              <div className="font-semibold mb-2">Immediate Help Available</div>
-              <div className="space-y-2 text-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4" />
-                    <span>Crisis Helpline: 988 (24/7)</span>
+      {/* Messages Area */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full p-6" ref={scrollAreaRef}>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {messages.map((message, index) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-4 duration-500`}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="group relative max-w-[80%]">
+                  <div
+                    className={`rounded-2xl p-4 shadow-lg border ${
+                      message.sender === "user"
+                        ? "bg-primary text-primary-foreground border-primary/20"
+                        : "bg-card text-card-foreground border-border"
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      {message.sender === "ai" && (
+                        <div className="bg-primary/10 rounded-full p-2 flex-shrink-0">
+                          <Bot className="h-5 w-5 text-primary" />
+                        </div>
+                      )}
+                      {message.sender === "user" && (
+                        <div className="bg-muted rounded-full p-2 flex-shrink-0">
+                          <User className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base leading-relaxed break-words">{message.content}</p>
+                        <div className="flex items-center justify-between mt-3 gap-2">
+                          <span className="text-xs opacity-70 flex-shrink-0">
+                            {formatTime(message.timestamp)}
+                          </span>
+                          {message.severity && message.sender === "user" && (
+                            <Badge variant="outline" className={`text-xs ${getSeverityColor(message.severity)}`}>
+                              {message.severity}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
-                  <div className="flex items-center space-x-2">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Text Crisis Line: Text HOME to 741741</span>
-                  </div>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {chatStats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="p-3 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{stat.value}</p>
-                  </div>
-                  <div className="bg-emerald-100 rounded-lg p-2 sm:p-3">
-                    <stat.icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {/* Message Actions */}
+                  <div className="absolute -bottom-2 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Popover open={showEmojiPicker === message.id} onOpenChange={(open) => setShowEmojiPicker(open ? message.id : null)}>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-8 h-8 p-0 bg-background/80 backdrop-blur-sm border border-border rounded-full hover:bg-accent">
+                          <Smile className="w-4 h-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-2 bg-popover border-border">
+                        <div className="flex space-x-1">
+                          {emojis.map(({ emoji, label }) => (
+                            <Button
+                              key={emoji}
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => addReaction(message.id, emoji)}
+                              className="w-8 h-8 p-0 hover:bg-accent"
+                              title={label}
+                            >
+                              {emoji}
+                            </Button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="chat" className="text-xs sm:text-sm">
-              AI Chat Support
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="text-xs sm:text-sm">
-              Session Insights
-            </TabsTrigger>
-            <TabsTrigger value="resources" className="text-xs sm:text-sm">
-              Quick Resources
-            </TabsTrigger>
-          </TabsList>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyMessage(message.content)}
+                      className="w-8 h-8 p-0 bg-background/80 backdrop-blur-sm border border-border rounded-full hover:bg-accent"
+                      title="Copy message"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
 
-          <TabsContent value="chat" className="space-y-6">
-            <Card className="h-[400px] sm:h-[600px] flex flex-col">
-              <CardHeader className="border-b border-border px-4 py-3 sm:p-6 flex-shrink-0">
-                <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                  <div className="bg-emerald-100 rounded-full p-2">
-                    <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
-                  </div>
-                  <span className="truncate">AI Mental Health Support</span>
-                  <Badge variant="secondary" className="ml-auto text-xs bg-green-100 text-green-800">
-                    Online
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-
-              <div className="flex-1 flex flex-col min-h-0">
-                <ScrollArea className="flex-1 p-3 sm:p-4" ref={scrollAreaRef}>
-                  <div className="space-y-3 sm:space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                    {message.sender === "ai" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => speakMessage(message.content)}
+                        className="w-8 h-8 p-0 bg-background/80 backdrop-blur-sm border border-border rounded-full hover:bg-accent"
+                        title="Speak message"
                       >
-                        <div
-                          className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-3 sm:p-4 ${
-                            message.sender === "user"
-                              ? "bg-emerald-600 text-white"
-                              : "bg-white text-gray-900 border border-gray-200"
-                          }`}
-                        >
-                          <div className="flex items-start space-x-2">
-                            {message.sender === "ai" && (
-                              <Bot className="h-3 w-3 sm:h-4 sm:w-4 mt-1 flex-shrink-0 text-emerald-600" />
-                            )}
-                            {message.sender === "user" && <User className="h-3 w-3 sm:h-4 sm:w-4 mt-1 flex-shrink-0" />}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm leading-relaxed break-words">{message.content}</p>
-                              <div className="flex items-center justify-between mt-2 gap-2">
-                                <span className="text-xs opacity-70 flex-shrink-0">
-                                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                </span>
-                                {message.severity && message.sender === "user" && (
-                                  <Badge variant="outline" className={`text-xs ${getSeverityColor(message.severity)}`}>
-                                    {message.severity}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {isTyping && (
-                      <div className="flex justify-start">
-                        <div className="bg-white text-gray-900 border border-gray-200 rounded-lg p-3 sm:p-4 max-w-[85%] sm:max-w-[80%]">
-                          <div className="flex items-center space-x-2">
-                            <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
-                            <div className="flex space-x-1">
-                              <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce" />
-                              <div
-                                className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce"
-                                style={{ animationDelay: "0.1s" }}
-                              />
-                              <div
-                                className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce"
-                                style={{ animationDelay: "0.2s" }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                        <Volume2 className="w-4 h-4" />
+                      </Button>
                     )}
                   </div>
-                </ScrollArea>
 
-                <div className="border-t border-gray-200 p-3 sm:p-4 bg-white flex-shrink-0">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Share what's on your mind..."
-                      className="flex-1 text-sm border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                      disabled={isTyping}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!inputValue.trim() || isTyping}
-                      size="sm"
-                      className="px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                    This AI provides support but is not a replacement for professional mental health care.
-                  </p>
+                  {/* Reactions */}
+                  {message.reactions && message.reactions.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2 ml-12">
+                      {message.reactions.map((reaction, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center px-2 py-1 text-xs bg-muted border border-border rounded-full"
+                        >
+                          {reaction}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </Card>
-          </TabsContent>
+            ))}
 
-          <TabsContent value="insights" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Session Analysis</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Emotional State</span>
-                      <Badge className="bg-yellow-100 text-yellow-800">Moderate Concern</Badge>
+            {isTyping && (
+              <div className="flex justify-start animate-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-card text-card-foreground border border-border rounded-2xl p-4 max-w-[80%] shadow-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-primary/10 rounded-full p-2">
+                      <Bot className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Engagement Level</span>
-                      <Badge className="bg-green-100 text-green-800">High</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Support Needed</span>
-                      <Badge className="bg-blue-100 text-blue-800">Active Listening</Badge>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-primary rounded-full animate-bounce" />
+                      <div
+                        className="w-3 h-3 bg-primary rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      />
+                      <div
+                        className="w-3 h-3 bg-primary rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recommended Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-emerald-50">
-                    <Brain className="h-5 w-5 text-emerald-600" />
-                    <div>
-                      <p className="text-sm font-medium">Practice Mindfulness</p>
-                      <p className="text-xs text-gray-600">Try 5-minute breathing exercises</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50">
-                    <MessageCircle className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="text-sm font-medium">Schedule Follow-up</p>
-                      <p className="text-xs text-gray-600">Book counselor appointment</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="resources" className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-              <Card className="p-4 text-center cursor-pointer hover:bg-emerald-50 transition-colors active:scale-95">
-                <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mx-auto mb-2" />
-                <h3 className="font-semibold mb-1 text-sm sm:text-base">Feeling Anxious?</h3>
-                <p className="text-xs sm:text-sm text-gray-600">Get immediate coping strategies</p>
-              </Card>
-
-              <Card className="p-4 text-center cursor-pointer hover:bg-emerald-50 transition-colors active:scale-95">
-                <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mx-auto mb-2" />
-                <h3 className="font-semibold mb-1 text-sm sm:text-base">Need to Talk?</h3>
-                <p className="text-xs sm:text-sm text-gray-600">Connect with peer support</p>
-              </Card>
-
-              <Card className="p-4 text-center cursor-pointer hover:bg-emerald-50 transition-colors active:scale-95">
-                <Phone className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mx-auto mb-2" />
-                <h3 className="font-semibold mb-1 text-sm sm:text-base">Crisis Support</h3>
-                <p className="text-xs sm:text-sm text-gray-600">24/7 professional help</p>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <Dialog open={showBookingPopup} onOpenChange={setShowBookingPopup}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-emerald-600" />
-                <span>Professional Support Recommended</span>
-              </DialogTitle>
-              <DialogDescription>
-                Based on our conversation, it would be beneficial to speak with a professional counselor who can provide
-                personalized support and guidance.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="bg-emerald-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-emerald-800 mb-2">Why book counselling?</h4>
-                <ul className="text-sm text-emerald-700 space-y-1">
-                  <li>• Get personalized coping strategies</li>
-                  <li>• Professional assessment and support</li>
-                  <li>• Confidential and safe environment</li>
-                  <li>• Available appointments within 24-48 hours</li>
-                </ul>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Book Counselling
-                </Button>
-                <Button variant="outline" onClick={() => setShowBookingPopup(false)} className="flex-1">
-                  Maybe Later
-                </Button>
-              </div>
-              <p className="text-xs text-gray-500 text-center">Emergency? Call 988 for immediate crisis support</p>
-            </div>
-          </DialogContent>
-        </Dialog>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
       </div>
+
+      {/* Input Area */}
+      <div className="bg-card border-t border-border p-6 shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex space-x-4">
+            <div className="flex-1 relative">
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Share what's on your mind..."
+                className="text-base py-4 px-6 rounded-full border-2 border-input bg-background focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all duration-200"
+                disabled={isTyping}
+              />
+            </div>
+
+            {/* Voice Input Button */}
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+              className={`px-6 py-4 rounded-full border-2 transition-all duration-200 ${
+                isRecording
+                  ? "bg-destructive border-destructive text-destructive-foreground animate-pulse"
+                  : "border-border bg-background hover:bg-accent"
+              }`}
+              title={isRecording ? "Stop recording" : "Start voice input"}
+            >
+              {isRecording ? (
+                <MicOff className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
+            </Button>
+
+            <Button
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim() || isTyping}
+              size="lg"
+              className="px-8 py-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 text-center leading-relaxed">
+            This AI provides support but is not a replacement for professional mental health care.
+          </p>
+        </div>
+      </div>
+
+      {/* Crisis Booking Dialog */}
+      <Dialog open={showBookingPopup} onOpenChange={setShowBookingPopup}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-destructivetive" />
+              <span>Professional Help Recommended</span>
+            </DialogTitle>
+            <DialogDescription>
+              Based on your conversation, we recommend speaking with a professional counselor.
+              Would you like to schedule an appointment?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowBookingPopup(false)}>
+              Not Now
+            </Button>
+            <Button onClick={() => setShowBookingPopup(false)}>
+              Schedule Appointment
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

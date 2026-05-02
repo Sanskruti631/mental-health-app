@@ -1,33 +1,117 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { ChatInterface } from "@/components/chat-interface"
-import { Navigation } from "@/components/navigation"
+import { ChatSidebar } from "@/components/chat-sidebar"
+import { WellnessSidebar } from "@/components/wellness-sidebar"
+
+interface ChatSession {
+  id: string
+  title: string
+  lastMessage: string
+  timestamp: Date
+  unreadCount?: number
+}
 
 export default function ChatPage() {
+  const [sessions, setSessions] = useState<ChatSession[]>([
+    {
+      id: "1",
+      title: "Mental Health Support",
+      lastMessage: "Hello! I'm your AI mental health support assistant...",
+      timestamp: new Date(),
+    },
+  ])
+  const [activeSessionId, setActiveSessionId] = useState("1")
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  useEffect(() => {
+    // Check for saved dark mode preference
+    const saved = localStorage.getItem("darkMode")
+    if (saved) {
+      setIsDarkMode(JSON.parse(saved))
+    }
+
+    // Check for saved sidebar state
+    const sidebarState = localStorage.getItem("sidebarCollapsed")
+    if (sidebarState) {
+      setSidebarCollapsed(JSON.parse(sidebarState))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Apply dark mode to document
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+    localStorage.setItem("darkMode", JSON.stringify(isDarkMode))
+  }, [isDarkMode])
+
+  useEffect(() => {
+    // Save sidebar state
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed))
+  }, [sidebarCollapsed])
+
+  const handleNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: "New Conversation",
+      lastMessage: "Start a new conversation...",
+      timestamp: new Date(),
+    }
+    setSessions(prev => [newSession, ...prev])
+    setActiveSessionId(newSession.id)
+  }
+
+  const handleDeleteSession = (id: string) => {
+    setSessions(prev => prev.filter(session => session.id !== id))
+    if (activeSessionId === id && sessions.length > 1) {
+      const remainingSessions = sessions.filter(session => session.id !== id)
+      setActiveSessionId(remainingSessions[0].id)
+    }
+  }
+
+  const handleToggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode)
+  }
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Navigation */}
-      <Navigation />
+    <div className="h-screen flex bg-background overflow-hidden">
+      <WellnessSidebar />
+      {/* Sidebar */}
+      <ChatSidebar
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSessionSelect={setActiveSessionId}
+        onNewSession={handleNewSession}
+        onDeleteSession={handleDeleteSession}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={handleToggleDarkMode}
+        isCollapsed={sidebarCollapsed}
+        onToggleSidebar={toggleSidebar}
+      />
 
-      {/* Main Chatbot Section */}
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto flex flex-col h-full">
-          
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold">
-              🤖 AI Chatbot
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Chat with our AI assistant for guidance, support, and answers.
-            </p>
-          </div>
-
-          {/* Chat Interface */}
-          <div className="flex-1 border rounded-xl shadow-sm bg-card p-4">
-            <ChatInterface />
-          </div>
-
-        </div>
-      </main>
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <ChatInterface
+          sessionId={activeSessionId}
+          isDarkMode={isDarkMode}
+          onUpdateSession={(id, title, lastMessage) => {
+            setSessions(prev => prev.map(session =>
+              session.id === id
+                ? { ...session, title, lastMessage, timestamp: new Date() }
+                : session
+            ))
+          }}
+        />
+      </div>
     </div>
   )
 }

@@ -147,6 +147,68 @@ model therapist_profiles {
   @@index([user_id], map: "idx_therapist_profiles_user_id")
 }
 
+model conversations {
+  id           String      @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  student_id   String      @db.Char(36)
+  therapist_id String      @db.Char(36)
+  created_at   DateTime?   @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?   @default(now()) @db.Timestamp(0)
+  messages     messages[]
+  student      users       @relation("conversations_student", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  therapist    users       @relation("conversations_therapist", fields: [therapist_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([student_id], map: "idx_conversations_student_id")
+  @@index([therapist_id], map: "idx_conversations_therapist_id")
+}
+
+model messages {
+  id              String       @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  conversation_id String       @db.Char(36)
+  sender_id       String       @db.Char(36)
+  message_text    String       @db.Text
+  is_read         Boolean?     @default(false)
+  created_at      DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at      DateTime?    @default(now()) @db.Timestamp(0)
+  conversation    conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sender          users        @relation(fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([conversation_id], map: "idx_messages_conversation_id")
+  @@index([sender_id], map: "idx_messages_sender_id")
+  @@index([is_read], map: "idx_messages_is_read")
+}
+
+model mood_entries {
+  id           String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id      String    @db.Char(36)
+  mood_level   Int       // 1-5 scale
+  activities   Json?     // Array of activities
+  notes        String?   @db.Text
+  date         DateTime  @db.Date
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  user         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_mood_entries_user_id")
+  @@index([date], map: "idx_mood_entries_date")
+  @@unique([user_id, date], map: "unique_mood_per_day")
+}
+
+model questionnaire_results {
+  id                String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id           String    @db.Char(36)
+  questionnaire_type String   // "PHQ-9", "GAD-7", "GHQ-12"
+  score             Int
+  risk_level        String    // "minimal", "mild", "moderate", "severe"
+  responses         Json?     // Store user's responses
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_at        DateTime? @default(now()) @db.Timestamp(0)
+  user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_questionnaire_user_id")
+  @@index([questionnaire_type], map: "idx_questionnaire_type")
+  @@index([created_at], map: "idx_questionnaire_created_at")
+}
+
 model user_sessions {
   id            String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
   user_id       String    @db.Char(36)
@@ -188,6 +250,11 @@ model users {
   therapist_availability                        therapist_availability[]
   therapist_profiles                            therapist_profiles?
   user_sessions                                 user_sessions[]
+  conversations_student                         conversations[]             @relation("conversations_student")
+  conversations_therapist                       conversations[]             @relation("conversations_therapist")
+  messages                                      messages[]
+  mood_entries                                  mood_entries[]
+  questionnaire_results                         questionnaire_results[]
 
   @@index([created_at], map: "idx_users_created_at")
   @@index([email], map: "idx_users_email")

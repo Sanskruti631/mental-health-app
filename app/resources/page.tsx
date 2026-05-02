@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { Navigation } from "@/components/navigation"
+import { WellnessSidebar } from "@/components/wellness-sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -70,24 +70,23 @@ export default function ResourcesPage() {
   }
 
   return (
-    <>
-      <Navigation />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-primary rounded-lg p-3">
-                <BookOpen className="h-8 w-8 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-foreground">Learning Resources</h1>
-                <p className="text-muted-foreground mt-1">Helpful articles and guides for your mental health journey</p>
-              </div>
+    <div className="min-h-screen flex bg-emerald-50 dark:bg-emerald-950/10">
+      <WellnessSidebar />
+      <div className="flex-1 max-w-6xl mx-auto px-4 py-8 overflow-y-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="bg-primary rounded-lg p-3">
+              <BookOpen className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground">Learning Resources</h1>
+              <p className="text-muted-foreground mt-1">Helpful articles and guides for your mental health journey</p>
             </div>
           </div>
+        </div>
 
-          {/* Search Bar */}
+        {/* Search Bar */}
           <div className="mb-6">
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -171,8 +170,7 @@ export default function ResourcesPage() {
               </CardContent>
             </Card>
           )}
-        </div>
       </div>
-    </>
+    </div>
   )
 }
