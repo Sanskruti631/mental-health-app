@@ -143,17 +143,17 @@ export default function StudentDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Actions */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
             <Link href="/chat">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <MessageCircle className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">AI Chat Support</h3>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                  <MessageCircle className="h-8 w-8 text-blue-500 mx-auto mb-3" />
+                  <h3 className="font-semibold mb-1">AI Chat Support</h3>
                   <p className="text-sm text-muted-foreground">24/7 mental health assistant</p>
                 </CardContent>
               </Card>
@@ -162,10 +162,10 @@ export default function StudentDashboard() {
 
           <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
             <Link href="/appointments">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <Calendar className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">Book Counseling</h3>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                  <Calendar className="h-8 w-8 text-green-500 mx-auto mb-3" />
+                  <h3 className="font-semibold mb-1">Book Counseling</h3>
                   <p className="text-sm text-muted-foreground">Schedule with a counselor</p>
                 </CardContent>
               </Card>
@@ -174,10 +174,10 @@ export default function StudentDashboard() {
 
           <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
             <Link href="/resources">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <BookOpen className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">Resources</h3>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                  <BookOpen className="h-8 w-8 text-purple-500 mx-auto mb-3" />
+                  <h3 className="font-semibold mb-1">Resources</h3>
                   <p className="text-sm text-muted-foreground">Self-help materials</p>
                 </CardContent>
               </Card>
@@ -186,10 +186,10 @@ export default function StudentDashboard() {
 
           <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
             <Link href="/games">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <Brain className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">Wellness Games</h3>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                  <Brain className="h-8 w-8 text-emerald-500 mx-auto mb-3" />
+                  <h3 className="font-semibold mb-1">Wellness Games</h3>
                   <p className="text-sm text-muted-foreground">Refresh your mind</p>
                 </CardContent>
               </Card>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   PHQ9_QUESTIONS,
   GAD7_QUESTIONS,
@@ -29,8 +29,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WellnessSidebar } from "@/components/wellness-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default function QuizWithSidebarPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Determine initial step based on type parameter
+  const getInitialStep = () => {
+    const type = searchParams.get("type");
+    switch (type) {
+      case "phq9":
+        return 0;
+      case "gad7":
+        return 1;
+      case "ghq12":
+        return 2;
+      default:
+        return 0;
+    }
+  };
 
   // Group questions by scale for the multi-step flow
   const steps: {
@@ -59,7 +77,7 @@ export default function QuizWithSidebarPage() {
     },
   ];
 
-  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [currentStepIdx, setCurrentStepIdx] = useState(getInitialStep());
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<number | null>(null);
