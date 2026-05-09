@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Cpu, MessageCircle, BookOpen, Settings, Home, User } from "lucide-react"
+import { Cpu, MessageCircle, BookOpen, Settings, Home, User, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,6 +12,11 @@ export function WellnessSidebar() {
   const { user } = useAuth()
 
   const navItems = [
+    {
+      href: "/dashboard/student",
+      label: "Dashboard",
+      icon: LayoutGrid,
+    },
     {
       href: "/quiz",
       label: "Questionnaire",

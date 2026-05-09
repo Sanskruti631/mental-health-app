@@ -62,19 +62,6 @@ export function UserMenu() {
     }
   }
 
-  const getDashboardLink = () => {
-    switch (user.role) {
-      case "student":
-        return "/dashboard/student"
-      case "admin":
-        return "/dashboard"
-      case "therapist":
-        return "/dashboard/counsellor"
-      default:
-        return "/"
-    }
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -109,13 +96,6 @@ export function UserMenu() {
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
-
-        <DropdownMenuItem asChild>
-          <Link href={getDashboardLink()} className="flex items-center cursor-pointer">
-            {getRoleIcon()}
-            <span className="ml-2">Dashboard</span>
-          </Link>
-        </DropdownMenuItem>
 
         {user.role === "student" && (
           <>
