@@ -55,7 +55,7 @@ export default function CounsellorRegisterPage() {
         experience,
       } as any)
 
-      router.push("/therapist-dashboard")
+      router.push("/dashboard/counsellor")
 
     } catch (err: any) {
       setError(err?.message || "Registration failed")

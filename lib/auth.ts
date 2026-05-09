@@ -175,7 +175,7 @@ export const getRequiredRole = (pathname: string): string[] => {
     "/dashboard": ["admin"],
     "/admin": ["admin"],
 
-    "/therapist-dashboard": ["therapist"],
+    "/dashboard/counsellor": ["therapist"],
     "/therapist": ["therapist"],
 
     "/chat": ["student", "therapist"],

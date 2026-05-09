@@ -50,7 +50,7 @@ export function Navigation() {
 
       case "therapist":
         return [
-          { name: t("Dashboard"), href: "/therapist-dashboard", icon: Stethoscope },
+          { name: t("Dashboard"), href: "/dashboard/counsellor", icon: Stethoscope },
           { name: t("Appointments"), href: "/therapist/appointments", icon: Calendar },
           { name: t("Messages"), href: "/therapist/messages", icon: MessageCircle },
         ];

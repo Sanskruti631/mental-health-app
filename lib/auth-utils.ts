@@ -118,7 +118,7 @@ export function getDashboardForRole(role: string): string {
     case "admin":
       return "/dashboard"
     case "therapist":
-      return "/therapist-dashboard"
+      return "/dashboard/counsellor"
     case "student":
       return "/"
     default:
@@ -218,6 +218,9 @@ export function canAccessResource(user: User, resourceType: string, resourceId?:
       return user.role === "admin"
 
     case "therapist-dashboard":
+      return user.role === "therapist"
+
+    case "dashboard/counsellor":
       return user.role === "therapist"
 
     default:

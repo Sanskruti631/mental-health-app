@@ -30,7 +30,7 @@ export default function AdminRegisterPage() {
     e.preventDefault()
     setError(null)
 
-    if (!email || !password || !confirmPassword || !name || !collegeName || !collegeId) {
+    if (!email || !password || !confirmPassword || !name ) {
       setError("Please fill all required fields")
       return
     }
@@ -49,8 +49,7 @@ export default function AdminRegisterPage() {
         confirmPassword,
         name,
         userType: "admin",
-        collegeName,
-        collegeId,
+        
       } as any)
 
       router.push("/dashboard")
@@ -122,29 +121,7 @@ export default function AdminRegisterPage() {
                 />
               </div>
 
-              {/* College Name */}
-              <div>
-                <Label htmlFor="college-name">College Name *</Label>
-                <Input
-                  id="college-name"
-                  placeholder="Enter college name"
-                  value={collegeName}
-                  onChange={(e) => setCollegeName(e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* College ID */}
-              <div>
-                <Label htmlFor="college-id">College ID *</Label>
-                <Input
-                  id="college-id"
-                  placeholder="Enter college ID"
-                  value={collegeId}
-                  onChange={(e) => setCollegeId(e.target.value)}
-                  required
-                />
-              </div>
+          
 
               {/* Password */}
               <div>

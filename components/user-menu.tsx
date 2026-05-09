@@ -21,7 +21,6 @@ export function UserMenu() {
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [dashboardOpen, setDashboardOpen] = useState(false)
 
   if (!user) return null
 
@@ -70,7 +69,7 @@ export function UserMenu() {
       case "admin":
         return "/dashboard"
       case "therapist":
-        return "/therapist-dashboard"
+        return "/dashboard/counsellor"
       default:
         return "/"
     }
@@ -111,39 +110,12 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <div
-          className="flex items-center justify-between rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-          onClick={() => setDashboardOpen((prev) => !prev)}
-        >
-          <div className="flex items-center gap-2">
+        <DropdownMenuItem asChild>
+          <Link href={getDashboardLink()} className="flex items-center cursor-pointer">
             {getRoleIcon()}
-            <span>Dashboard</span>
-          </div>
-          <ChevronDown className={`h-4 w-4 transition-transform ${dashboardOpen ? "rotate-180" : "rotate-0"}`} />
-        </div>
-
-        {dashboardOpen && (
-          <div className="space-y-1 pl-7 pt-2">
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/student" className="flex items-center cursor-pointer">
-                <GraduationCap className="h-4 w-4" />
-                <span className="ml-2">Student Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/counsellor" className="flex items-center cursor-pointer">
-                <Stethoscope className="h-4 w-4" />
-                <span className="ml-2">Counselor Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/admin" className="flex items-center cursor-pointer">
-                <Shield className="h-4 w-4" />
-                <span className="ml-2">Admin Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-          </div>
-        )}
+            <span className="ml-2">Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
 
         {user.role === "student" && (
           <>

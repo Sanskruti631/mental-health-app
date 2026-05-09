@@ -101,7 +101,7 @@ export default function TherapistDashboardContent() {
 
   const handleJoinSession = (appointmentId: string) => {
     alert(`Starting video session for appointment ${appointmentId}...`)
-    router.push(`/therapist-dashboard?session=${appointmentId}`)
+    router.push(`/dashboard/counsellor?session=${appointmentId}`)
   }
 
   const handleReschedule = (appointmentId: string) => {

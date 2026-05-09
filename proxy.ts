@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 // Define protected routes and roles
 const protectedRoutes = {
   "/dashboard": ["admin"],
-  "/therapist-dashboard": ["therapist"],
+  "/dashboard/counsellor": ["therapist"],
   "/appointments": ["student", "therapist"],
   "/chat": ["student", "therapist"],
   "/profile": ["student", "admin", "therapist"],
@@ -115,7 +115,7 @@ function getDashboardForRole(role?: string): string {
     case "admin":
       return "/dashboard";
     case "therapist":
-      return "/therapist-dashboard";
+      return "/dashboard/counsellor";
     case "student":
       return "/";
     default:

@@ -35,25 +35,25 @@ export function TherapistSidebar() {
   const sidebarItems: SidebarItem[] = [
     {
       name: "Dashboard",
-      href: "/therapist-dashboard",
+      href: "/dashboard/counsellor",
       icon: <BarChart3 className="h-5 w-5" />,
       color: "text-blue-600",
     },
     {
       name: "Appointments",
-      href: "/therapist-dashboard?tab=appointments",
+      href: "/dashboard/counsellor?tab=appointments",
       icon: <Calendar className="h-5 w-5" />,
       color: "text-green-600",
     },
     {
       name: "Messages",
-      href: "/therapist-dashboard?tab=messages",
+      href: "/dashboard/counsellor?tab=messages",
       icon: <MessageCircle className="h-5 w-5" />,
       color: "text-purple-600",
     },
     {
       name: "Patients",
-      href: "/therapist-dashboard?tab=patients",
+      href: "/dashboard/counsellor?tab=patients",
       icon: <Users className="h-5 w-5" />,
       color: "text-orange-600",
     },
