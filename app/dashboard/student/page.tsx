@@ -195,18 +195,6 @@ export default function StudentDashboard() {
               </Card>
             </Link>
           </motion.div>
-
-          <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
-            <Link href="/community">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6 text-center">
-                  <Users className="h-8 w-8 text-orange-500 mx-auto mb-2" />
-                  <h3 className="font-semibold">Peer Support</h3>
-                  <p className="text-sm text-muted-foreground">Connect with others</p>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

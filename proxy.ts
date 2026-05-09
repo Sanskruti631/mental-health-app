@@ -18,6 +18,8 @@ const publicRoutes = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/admin-login",
+  "/counselor-login",
 ];
 
 // API access rules
@@ -41,11 +43,21 @@ export default function proxy(request: NextRequest) {
 
   // --- Public pages ---
   if (publicRoutes.includes(pathname)) {
-    if (sessionToken && ["/login", "/register"].includes(pathname)) {
-      return NextResponse.redirect(
-        new URL(getDashboardForRole(userRole), request.url)
-      );
+    if (sessionToken) {
+      if (pathname === "/login" && userRole === "student") {
+        return NextResponse.redirect(new URL(getDashboardForRole(userRole), request.url))
+      }
+      if (pathname === "/admin-login" && userRole === "admin") {
+        return NextResponse.redirect(new URL(getDashboardForRole(userRole), request.url))
+      }
+      if (pathname === "/counselor-login" && userRole === "therapist") {
+        return NextResponse.redirect(new URL(getDashboardForRole(userRole), request.url))
+      }
+      if (pathname === "/register") {
+        return NextResponse.redirect(new URL(getDashboardForRole(userRole), request.url))
+      }
     }
+
     return NextResponse.next();
   }
 

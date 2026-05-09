@@ -21,6 +21,7 @@ import {
   Sparkles,
   Target,
   Zap,
+  ArrowLeft,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -139,6 +140,12 @@ export default function WellnessGames() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
+              <Button variant="ghost" asChild className="mr-4">
+                <Link href="/" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Link>
+              </Button>
               <div className="bg-emerald-500 rounded-lg p-2">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>

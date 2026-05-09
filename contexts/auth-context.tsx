@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { type User, type AuthState, type LoginCredentials, type RegisterData, authService } from "@/lib/auth"
 
 interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>
+  login: (credentials: LoginCredentials) => Promise<User>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
@@ -59,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         isAuthenticated: true,
       })
+      return user
     } catch (error) {
       setState((prev) => ({ ...prev, isLoading: false }))
       throw error

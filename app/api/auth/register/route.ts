@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, role = "student", licenseNumber, yearsExperience, bio } = await req.json();
+    const { email, password, name, role = "student", licenseNumber, yearsExperience, bio, collegeName, collegeId, specialization } = await req.json();
 
     // ✅ Accept role from request (defaults to "student")
     if (!email || !password || !name) {
@@ -70,6 +70,7 @@ export async function POST(req: Request) {
             license_number: licenseNumber || `LIC-${randomUUID().slice(0, 8)}`,
             years_experience: yearsExperience || "0",
             bio: bio || "",
+            specialties: specialization ? [specialization] : [],
             is_accepting_patients: true,
           },
         });
@@ -78,8 +79,8 @@ export async function POST(req: Request) {
         await tx.admin_profiles.create({
           data: {
             user_id: userId,
-            college_name: "System Admin",
-            college_id: `COL-${randomUUID().slice(0, 8)}`,
+            college_name: collegeName || "System Admin",
+            college_id: collegeId || `COL-${randomUUID().slice(0, 8)}`,
           },
         });
       }

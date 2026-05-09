@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { ChatInterface } from "@/components/chat-interface"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { WellnessSidebar } from "@/components/wellness-sidebar"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 interface ChatSession {
   id: string
@@ -100,6 +103,14 @@ export default function ChatPage() {
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
+        <div className="p-4 border-b border-border">
+          <Button variant="ghost" asChild>
+            <Link href="/" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </Button>
+        </div>
         <ChatInterface
           sessionId={activeSessionId}
           isDarkMode={isDarkMode}

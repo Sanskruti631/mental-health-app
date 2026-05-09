@@ -178,6 +178,14 @@ export default function QuizWithSidebarPage() {
       <WellnessSidebar />
 
       <main className="flex-1 p-6 overflow-y-auto">
+        <div className="mb-4">
+          <Button variant="ghost" asChild>
+            <Link href="/" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </Button>
+        </div>
         <div
           className="rounded-xl overflow-hidden mb-6 relative"
           style={{ height: 160 }}

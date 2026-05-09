@@ -18,8 +18,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [role, setRole] = useState<"student" | "admin" | "therapist">("student")
-
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -30,16 +28,9 @@ export default function LoginPage() {
       setError(null)
       setLoading(true)
 
-      await login({ email, password, userType: role })
+      await login({ email, password, userType: "student" })
 
-      // ✅ Role-based redirect
-      if (role === "admin") {
-        router.push("/dashboard")
-      } else if (role === "therapist") {
-        router.push("/therapist-dashboard")
-      } else {
-        router.push("/chat") // or /quiz if you prefer
-      }
+      router.push("/chat")
 
     } catch (error) {
       setError((error as any)?.message || "Login failed")
@@ -124,20 +115,6 @@ export default function LoginPage() {
                     )}
                   </Button>
                 </div>
-              </div>
-
-              {/* 🔥 Role Selection */}
-              <div>
-                <Label>Select Role</Label>
-                <select
-                  className="w-full border rounded-md p-2"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
-                >
-                  <option value="student">Student</option>
-                  <option value="admin">Admin</option>
-                  <option value="therapist">Therapist</option>
-                </select>
               </div>
 
               {/* Error */}

@@ -6,9 +6,8 @@ export function Footer() {
     platform: [
       { name: "AI Support Chat", href: "/chat" },
       { name: "Book Appointment", href: "/appointments" },
-     { name: "Counselor Login", href: "/counselor-login" }
-
-      
+      { name: "Counselor Login", href: "/counselor-login" },
+      { name: "Admin Login", href: "/admin-login" },
     ],
     support: [
       { name: "Crisis Helpline", href: "/crisis" },

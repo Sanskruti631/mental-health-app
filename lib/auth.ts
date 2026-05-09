@@ -119,11 +119,33 @@ body: JSON.stringify({
   },
 
   async resetPassword(email: string): Promise<void> {
-    return
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || data.message || "Failed to request password reset")
+    }
   },
 
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
-    return
+    if (!userId) {
+      throw new Error("No user logged in")
+    }
+
+    const res = await fetch("/api/auth/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || data.message || "Failed to change password")
+    }
   },
 
   async updateProfile(userId: string, updates: Partial<User>): Promise<User> {
@@ -131,7 +153,19 @@ body: JSON.stringify({
     if (!currentUser || currentUser.id !== userId) {
       throw new Error("Unauthorized")
     }
-    return { ...currentUser, ...updates }
+
+    const res = await fetch("/api/auth/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data.error || data.message || "Failed to update profile")
+    }
+
+    return data.user as User
   },
 }
 

@@ -7,9 +7,10 @@ import { WellnessSidebar } from "@/components/wellness-sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, ExternalLink, Loader, Search } from "lucide-react"
+import { BookOpen, ExternalLink, Loader, Search, ArrowLeft } from "lucide-react"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
 
 interface Resource {
   id: number
@@ -75,6 +76,12 @@ export default function ResourcesPage() {
       <div className="flex-1 max-w-6xl mx-auto px-4 py-8 overflow-y-auto">
         {/* Header */}
         <div className="mb-8">
+          <Button variant="ghost" asChild className="mb-4">
+            <Link href="/" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
+          </Button>
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-primary rounded-lg p-3">
               <BookOpen className="h-8 w-8 text-primary-foreground" />

@@ -26,7 +26,8 @@ export async function GET(request: Request) {
     const userId = session.users.id
 
     // Get appointments based on user role
-    let appointments
+    let appointments: any[]
+    let partnerKey: 'therapist' | 'student'
     if (session.users.role === "student") {
       appointments = await prisma.appointments.findMany({
         where: { student_id: userId },
@@ -37,6 +38,7 @@ export async function GET(request: Request) {
         },
         orderBy: [{ appointment_date: "asc" }],
       })
+      partnerKey = 'therapist'
     } else if (session.users.role === "therapist") {
       appointments = await prisma.appointments.findMany({
         where: { therapist_id: userId },
@@ -47,15 +49,16 @@ export async function GET(request: Request) {
         },
         orderBy: [{ appointment_date: "asc" }],
       })
+      partnerKey = 'student'
     } else {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
     }
 
     const formattedAppointments = appointments.map((apt) => ({
       id: apt.id,
-      partnerName: session.users.role === "student" 
-        ? apt.users_appointments_therapist_idTousers.name 
-        : apt.users_appointments_student_idTousers.name,
+      partnerName: partnerKey === 'therapist' 
+        ? (apt as any).users_appointments_therapist_idTousers.name 
+        : (apt as any).users_appointments_student_idTousers.name,
       date: apt.appointment_date?.toISOString().split("T")[0],
       time: apt.appointment_time?.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
       type: apt.session_type,

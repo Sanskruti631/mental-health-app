@@ -28,7 +28,7 @@ export default function UserHomePage() {
           <p className="text-lg text-gray-600">Track your wellbeing with standardized screening tools</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link href="/chat">
             <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700">
               <MessageCircle className="h-6 w-6" />
@@ -36,16 +36,28 @@ export default function UserHomePage() {
             </Button>
           </Link>
 
-          <Link href="/therapy-booking">
+          <Link href="/appointments">
             <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-green-600 hover:bg-green-700">
               <UserCheck className="h-6 w-6" />
               <span className="text-sm font-medium">Book Therapy</span>
             </Button>
           </Link>
 
-          
+          <Link href="/resources">
+            <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700">
+              <BookOpen className="h-6 w-6" />
+              <span className="text-sm font-medium">Resources</span>
+            </Button>
+          </Link>
 
-          <Link href="/crisis-support">
+          <Link href="/games">
+            <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700">
+              <Users className="h-6 w-6" />
+              <span className="text-sm font-medium">Games</span>
+            </Button>
+          </Link>
+
+          <Link href="/contact">
             <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-red-600 hover:bg-red-700">
               <Phone className="h-6 w-6" />
               <span className="text-sm font-medium">Crisis Support</span>

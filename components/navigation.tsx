@@ -15,6 +15,8 @@ import {
   Users,
   BarChart3,
   Stethoscope,
+  BookOpen,
+  Brain,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switche";
 import { useTranslation } from "react-i18next";
@@ -27,8 +29,8 @@ export function Navigation() {
   const getNavItems = () => {
     if (!user) {
       return [
-        { name: t("Features"), href: "/#features", icon: Heart },
-        { name: t("About"), href: "/#about", icon: Users },
+        { name: t("AiChatbot"), href: "/chat", icon: MessageCircle },
+        { name: t("BookAppointment"), href: "/appointments", icon: Calendar }
       ];
     }
 
@@ -36,7 +38,7 @@ export function Navigation() {
       case "student":
         return [
           { name: t("AiChatbot"), href: "/chat", icon: MessageCircle },
-          { name: t("BookAppointment"), href: "/appointments", icon: Calendar },
+          { name: t("BookAppointment"), href: "/appointments", icon: Calendar }
         ];
 
       case "admin":

@@ -30,7 +30,9 @@ export default function HelpPage() {
               <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Live Chat</h3>
               <p className="text-sm text-muted-foreground mb-4">Chat with our support team</p>
-              <Button size="sm">Start Chat</Button>
+              <Button size="sm" asChild>
+                <Link href="/chat">Start Chat</Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -39,8 +41,8 @@ export default function HelpPage() {
               <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Call Support</h3>
               <p className="text-sm text-muted-foreground mb-4">Speak with a counselor</p>
-              <Button size="sm" variant="outline">
-                Call Now
+              <Button size="sm" asChild>
+                <Link href="/contact">Call Now</Link>
               </Button>
             </CardContent>
           </Card>
