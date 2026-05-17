@@ -18,41 +18,56 @@ import {
   BookOpen,
   Brain,
 } from "lucide-react";
-import { LanguageSwitcher } from "@/components/language-switche";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "react-i18next";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
 
   const getNavItems = () => {
     if (!user) {
       return [
-        { name: t("AiChatbot"), href: "/chat", icon: MessageCircle },
-        { name: t("BookAppointment"), href: "/appointments", icon: Calendar }
+        { name: t("aiChatbot"), href: "/chat", icon: MessageCircle },
+        { name: t("bookAppointment"), href: "/appointments", icon: Calendar },
       ];
     }
 
     switch (user.role) {
       case "student":
         return [
-          { name: t("AiChatbot"), href: "/chat", icon: MessageCircle },
-          { name: t("BookAppointment"), href: "/appointments", icon: Calendar }
+          { name: t("aiChatbot"), href: "/chat", icon: MessageCircle },
+          { name: t("bookAppointment"), href: "/appointments", icon: Calendar },
         ];
 
       case "admin":
         return [
-          { name: t("Dashboard"), href: "/dashboard", icon: BarChart3 },
-          { name: t("UserManagement"), href: "/dashboard/admin/users", icon: Users },
-         
+          { name: t("dashboard"), href: "/dashboard", icon: BarChart3 },
+          {
+            name: t("userManagement"),
+            href: "/dashboard/admin/users",
+            icon: Users,
+          },
         ];
 
       case "therapist":
         return [
-          { name: t("Dashboard"), href: "/dashboard/counsellor", icon: Stethoscope },
-          { name: t("Appointments"), href: "/therapist/appointments", icon: Calendar },
-          { name: t("Messages"), href: "/therapist/messages", icon: MessageCircle },
+          {
+            name: t("dashboard"),
+            href: "/dashboard/counsellor",
+            icon: Stethoscope,
+          },
+          {
+            name: t("appointments"),
+            href: "/therapist/appointments",
+            icon: Calendar,
+          },
+          {
+            name: t("messages"),
+            href: "/therapist/messages",
+            icon: MessageCircle,
+          },
         ];
 
       default:
@@ -99,10 +114,10 @@ export function Navigation() {
             ) : (
               <>
                 <Button variant="outline" asChild>
-                  <Link href="/login">{t("Login")}</Link>
+                  <Link href="/login">{t("login")}</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/register">{t("Signup")}</Link>
+                  <Link href="/register">{t("signUp")}</Link>
                 </Button>
               </>
             )}
@@ -154,10 +169,10 @@ export function Navigation() {
                       className="w-full bg-transparent"
                       asChild
                     >
-                      <Link href="/login">{t("navLogin")}</Link>
+                      <Link href="/login">{t("login")}</Link>
                     </Button>
                     <Button className="w-full" asChild>
-                      <Link href="/register">{t("navSignup")}</Link>
+                      <Link href="/register">{t("signUp")}</Link>
                     </Button>
                   </>
                 )}

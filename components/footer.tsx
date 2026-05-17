@@ -1,24 +1,29 @@
+"use client";
+import "@/lib/i18n";
 import Link from "next/link"
 import { Heart, Mail, Phone } from "lucide-react"
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+  const { t } = useTranslation();
+  
   const footerLinks = {
     platform: [
-      { name: "AI Support Chat", href: "/chat" },
-      { name: "Book Appointment", href: "/appointments" },
+      { name: t("aiChatbot"), href: "/chat" },
+      { name: t("bookAppointment"), href: "/appointments" },
       { name: "Counselor Login", href: "/counselor-login" },
       { name: "Admin Login", href: "/admin-login" },
     ],
     support: [
-      { name: "Crisis Helpline", href: "/crisis" },
-      { name: "Emergency Resources", href: "/emergency" },
+      { name: t("crisisHelpline"), href: "/crisis" },
+      { name: t("emergencyResources"), href: "/emergency" },
       { name: "Contact Counselor", href: "/contact" },
       { name: "FAQ", href: "/faq" },
     ],
     about: [
       { name: "Our Mission", href: "/about" },
-      { name: "Privacy Policy", href: "/privacy" },
-      { name: "Terms of Service", href: "/terms" },
+      { name: t("privacyPolicy"), href: "/privacy" },
+      { name: t("termsOfService"), href: "/terms" },
       { name: "Accessibility", href: "/accessibility" },
     ],
   }
@@ -33,16 +38,15 @@ export function Footer() {
               <div className="bg-primary rounded-md p-1.5">
                 <Heart className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold">SoulSupport</span>
+              <span className="text-lg font-semibold">{t("soulSupport")}</span>
             </Link>
             <p className="text-muted-foreground leading-relaxed">
-              Empowering students with comprehensive mental health support through technology, community, and
-              professional care.
+              {t("soulSupportTagline")}
             </p>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>Crisis Helpline : 18008914413</span>
+                <span>{t("crisisHelpline")}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
@@ -67,7 +71,7 @@ export function Footer() {
 
           {/* Support Links */}
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
+            <h3 className="font-semibold mb-4">{t("support")}</h3>
             <ul className="space-y-2">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
@@ -81,7 +85,7 @@ export function Footer() {
 
           {/* About Links */}
           <div>
-            <h3 className="font-semibold mb-4">About</h3>
+            <h3 className="font-semibold mb-4">{t("about")}</h3>
             <ul className="space-y-2">
               {footerLinks.about.map((link) => (
                 <li key={link.name}>
@@ -95,9 +99,9 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border mt-8 pt-4 text-center text-muted-foreground">
-          <p>© 2026 SoulSupport Digital Mental Health Platform. Built with care for student wellbeing.</p>
+          <p>{t("copyright")}</p>
           <p className="mt-2 text-sm">
-            If you're in crisis, please contact emergency services or call our 24/7 helpline.
+            {t("crisisSupportDescription")}
           </p>
         </div>
       </div>

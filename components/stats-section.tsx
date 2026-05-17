@@ -1,8 +1,9 @@
-"use client"
-
+"use client";
+import "@/lib/i18n";
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { AnimatedCounter } from "./animated-counter"
+import { useTranslation } from "react-i18next";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,20 +28,20 @@ const cardVariants = {
 }
 
 export function StatsSection() {
+  const { t } = useTranslation();
+  
   const stats = [
     {
       number: 75,
       suffix: "%",
-      label: "of students report high stress levels",
-      description:
-        "Academic pressure and social challenges affect majority of students",
+      label: t("studentsSupported"),
+      description: t("studentsSupportedDesc"),
     },
     {
       number: 24,
       suffix: "/7",
-      label: "availability of AI support",
-      description:
-        "Round-the-clock access to mental health guidance and resources",
+      label: t("alwaysAvailable"),
+      description: t("alwaysAvailableDesc"),
     },
   ]
 
@@ -56,11 +57,10 @@ export function StatsSection() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Making a Real Impact
+            {t("statsSectionTitle")}
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Our evidence-based approach is helping students across institutions
-            build resilience and maintain better mental health.
+            {t("statsSectionDescription")}
           </p>
         </motion.div>
 
