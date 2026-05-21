@@ -7,14 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { AssessmentDialog } from "@/components/assessment-dialog";
 import {
   Send,
   Bot,
@@ -30,12 +24,20 @@ import {
   Angry,
   Copy,
   Volume2,
+  Activity,
 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Message {
   id: string;
@@ -53,7 +55,6 @@ interface ChatInterfaceProps {
   onUpdateSession: (id: string, title: string, lastMessage: string) => void;
 }
 
-// Helper function to format time consistently (server and client)
 const formatTime = (date: Date): string => {
   const hours = date.getHours();
   const minutes = date.getMinutes();
@@ -63,7 +64,6 @@ const formatTime = (date: Date): string => {
   return `${displayHours}:${paddedMinutes} ${ampm}`;
 };
 
-// Map language codes for speech recognition locales
 const LANGUAGE_LOCALE_MAP: Record<string, string> = {
   en: "en-US",
   hi: "hi-IN",
@@ -73,14 +73,13 @@ const LANGUAGE_LOCALE_MAP: Record<string, string> = {
   bn: "bn-IN",
 };
 
-// Welcome messages by language
 const WELCOME_MESSAGES: Record<string, string> = {
-  en: "Hello! I'm your AI mental health support assistant. I'm here to listen, provide coping strategies, and help you navigate any challenges you're facing. How are you feeling today?",
-  hi: "नमस्ते! मैं आपका AI मानसिक स्वास्थ्य सहायक हूं। मैं सुनने के लिए, सामना करने की రణనీతियां प्रदान करने के लिए, और आप जिन चुनौतियों का सामना कर रहे हैं उन्हें नेविगेट करने में मदद करने के लिए यहां हूं। आज आप कैसा महసూస్ कर रहे हैं?",
-  mr: "नमस्कार! मी तुमचा AI मानसिक आरोग्य सहाय्यक आहे. मी ऐकण्यासाठी, सामना करण्याच्या धोरणे प्रदान करण्यासाठी आणि तुम्ही ज्या आव्हानांचा सामना करत आहात त्यांना नेव्हిగेट करण्यात मદત करण्यासाठी येथे आहे. आज तुम्हाला कसे वाटत आहे?",
-  ta: "வணக்கம்! நான் உங்கள் AI மனநல உதவியாளர். நான் கேட்க, எதிர்கொள்ளும் உத்திகளை வழங்க, நீங்கள் எதிர்கொள்ளும் சவால்களில் வழிநடத்த உதவ இங்கு இருக்கிறேன். இன்று எப்படி இருக்கிறீர்கள்?",
-  te: "నమస్కారం! నేను మీ AI మానసిక ఆరోగ్య సహాయకుడి. నేను వినడానికి, ఎదుర్కోవే వ్యూహాలను అందించడానికి మరియు మీరు ఎదుర్కొనే సవాళ్లను నావిగేట్ చేయడంలో సహాయం చేయడానికి ఇక్కడ ఉన్నాను. ఈ రోజు మీరు ఎలా భావిస్తున్నారు?",
-  bn: "নমস্কার! আমি আপনার AI মানসিক স্বাস্থ্য সহায়ক। আমি শুনতে, মোকাবেলার কৌশল প্রদান করতে এবং আপনি যে চ্যালেঞ্জগুলির মুখোমুখি হচ্ছেন সেগুলি নেভিগেট করতে সাহায্য করার জন্য এখানে আছি। আজ আপনি কেমন অনুভব করছেন?",
+  en: "Hello! I'm SoulSupport, your AI mental health companion. I'm here to listen, support, and help you in any way I can. How are you feeling today?",
+  hi: "नमस्ते! मैं सोलसपोर्ट हूं, आपका AI मानसिक स्वास्थ्य साथी। मैं सुनने, समर्थन करने और आपकी मदद करने के लिए यहां हूं। आज आप कैसा महसूस कर रहे हैं?",
+  mr: "नमस्कार! मी सोलसपोर्ट आहे, तुमचा AI मानसिक आरोग्य साथी. मी ऐकण्यासाठी, समर्थन करण्यासाठी आणि तुमची मदत करण्यासाठी येथे आहे. आज तुम्हाला कसे वाटत आहे?",
+  ta: "வணக்கம்! நான் சோல்சப்போர்ட், உங்கள் AI மனநல தோழன். நான் கேட்க, ஆதரிக்க மற்றும் உங்களுக்கு உதவ இங்கு இருக்கிறேன். இன்று எப்படி இருக்கிறீர்கள்?",
+  te: "నమస్కారం! నేను సోల్‌సపోర్ట్, మీ AI మానసిక ఆరోగ్య సహచరుడు. నేను వినడానికి, మద్దతు ఇవ్వడానికి మరియు మీకు సహాయం చేయడానికి ఇక్కడ ఉన్నాను. ఈ రోజు మీరు ఎలా భావిస్తున్నారు?",
+  bn: "নমস্কার! আমি সোলসাপোর্ট, আপনার AI মানসিক স্বাস্থ্য সঙ্গী। আমি শুনতে, সমর্থন করতে এবং আপনাকে সাহায্য করতে এখানে আছি। আজ আপনি কেমন অনুভব করছেন?",
 };
 
 export function ChatInterface({
@@ -97,18 +96,29 @@ export function ChatInterface({
       timestamp: new Date(),
     },
   ]);
+
+  useEffect(() => {
+    setMessages([
+      {
+        id: "1",
+        content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
+        sender: "ai",
+        timestamp: new Date(),
+      },
+    ]);
+  }, [sessionId, i18n.language]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const [showAssessmentDialog, setShowAssessmentDialog] = useState(false);
+  const [currentAssessment, setCurrentAssessment] = useState<any>(null);
+  const [isAssessing, setIsAssessing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Voice recognition
   const recognitionRef = useRef<any>(null);
 
-  // Crisis keywords for detection
   const crisisKeywords = [
     "suicide",
     "kill myself",
@@ -120,51 +130,13 @@ export function ChatInterface({
     "better off dead",
   ];
 
-  // Mental health responses database (fallback)
-  const responses = {
-    greeting: [
-      "I'm glad you reached out today. Sharing how you feel takes courage. What's on your mind?",
-      "Thank you for being here. I'm listening and ready to support you. What would you like to talk about?",
-      "It's good to see you. Taking care of your mental health is important. How can I help you today?",
-    ],
-    anxiety: [
-      "Anxiety can feel overwhelming, but you're not alone. Try the 5-4-3-2-1 grounding technique: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, and 1 you taste.",
-      "When anxiety strikes, remember to breathe deeply. Inhale for 4 counts, hold for 4, exhale for 6. This activates your body's relaxation response.",
-      "Anxiety is your mind trying to protect you, but sometimes it overreacts. What specific situation is making you feel anxious right now?",
-    ],
-    depression: [
-      "Depression can make everything feel heavy and difficult. Your feelings are valid, and seeking help shows strength, not weakness.",
-      "When depression clouds your thoughts, remember that this feeling is temporary. Small steps like getting sunlight, gentle movement, or connecting with others can help.",
-      "Depression affects how you see yourself and the world. Have you been able to do any activities that usually bring you comfort or joy?",
-    ],
-    stress: [
-      "Academic stress is very common among students. Let's break down what's causing you stress and find manageable ways to address it.",
-      "Stress can feel overwhelming, but there are effective ways to manage it. Have you tried time-blocking your schedule or the Pomodoro technique?",
-      "Chronic stress affects both your mind and body. Are you getting enough sleep, nutrition, and physical activity?",
-    ],
-    crisis: [
-      "I'm very concerned about what you've shared. Your life has value and meaning. Please reach out to a crisis counselor immediately - iCall (TISS): 9152987821 or Vandrevala Foundation: 1860 2662 345.",
-      "You're going through something incredibly difficult right now, but you don't have to face this alone. Please contact emergency services immediately at 112, or call AASRA Suicide Helpline: 9820466726.",
-      "What you're feeling right now is temporary, even though it doesn't feel that way. Please reach out for immediate help: Call 112 (Emergency), iCall: 9152987821, Vandrevala: 1860 2662 345, or AASRA: 9820466726. Your life matters.",
-    ],
-    support: [
-      "Remember that seeking help is a sign of strength. You deserve support and care.",
-      "You're taking an important step by talking about your feelings. That takes real courage.",
-      "Your mental health matters, and you matter. There are people who want to help you through this.",
-    ],
-  };
-
   const detectSeverity = (
     message: string,
   ): "low" | "medium" | "high" | "crisis" => {
     const lowerMessage = message.toLowerCase();
-
-    // Crisis detection
     if (crisisKeywords.some((keyword) => lowerMessage.includes(keyword))) {
       return "crisis";
     }
-
-    // High severity indicators
     const highSeverityWords = [
       "panic",
       "can't cope",
@@ -175,8 +147,6 @@ export function ChatInterface({
     if (highSeverityWords.some((word) => lowerMessage.includes(word))) {
       return "high";
     }
-
-    // Medium severity indicators
     const mediumSeverityWords = [
       "anxious",
       "depressed",
@@ -188,62 +158,7 @@ export function ChatInterface({
     if (mediumSeverityWords.some((word) => lowerMessage.includes(word))) {
       return "medium";
     }
-
     return "low";
-  };
-
-  const generateResponse = (userMessage: string, severity: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-
-    if (severity === "crisis") {
-      return responses.crisis[
-        Math.floor(Math.random() * responses.crisis.length)
-      ];
-    }
-
-    if (
-      lowerMessage.includes("anxious") ||
-      lowerMessage.includes("anxiety") ||
-      lowerMessage.includes("panic")
-    ) {
-      return responses.anxiety[
-        Math.floor(Math.random() * responses.anxiety.length)
-      ];
-    }
-
-    if (
-      lowerMessage.includes("depressed") ||
-      lowerMessage.includes("depression") ||
-      lowerMessage.includes("sad")
-    ) {
-      return responses.depression[
-        Math.floor(Math.random() * responses.depression.length)
-      ];
-    }
-
-    if (
-      lowerMessage.includes("stress") ||
-      lowerMessage.includes("overwhelmed") ||
-      lowerMessage.includes("pressure")
-    ) {
-      return responses.stress[
-        Math.floor(Math.random() * responses.stress.length)
-      ];
-    }
-
-    if (
-      lowerMessage.includes("hello") ||
-      lowerMessage.includes("hi") ||
-      lowerMessage.includes("hey")
-    ) {
-      return responses.greeting[
-        Math.floor(Math.random() * responses.greeting.length)
-      ];
-    }
-
-    return responses.support[
-      Math.floor(Math.random() * responses.support.length)
-    ];
   };
 
   const handleSendMessage = async () => {
@@ -256,24 +171,22 @@ export function ChatInterface({
       timestamp: new Date(),
     };
 
-    const severity = detectSeverity(inputValue);
-    userMessage.severity = severity;
-
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
 
-    // Update session title and last message
     const title =
       inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue;
     onUpdateSession(sessionId, title, inputValue);
+
+    const severity = detectSeverity(inputValue);
+    userMessage.severity = severity;
 
     if (severity === "high" || severity === "crisis") {
       setTimeout(() => setShowBookingPopup(true), 2000);
     }
 
     try {
-      // Call the actual chat API
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -305,25 +218,23 @@ export function ChatInterface({
       }
     } catch (error) {
       console.error("Chat error:", error);
-      // Fallback to local response if API fails
-      setTimeout(
-        () => {
-          const aiResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            content: generateResponse(inputValue, severity),
-            sender: "ai",
-            timestamp: new Date(),
-            severity,
-          };
-
-          setMessages((prev) => [...prev, aiResponse]);
-          setIsTyping(false);
-
-          // Update session with AI response
-          onUpdateSession(sessionId, title, aiResponse.content);
-        },
-        1000 + Math.random() * 2000,
-      );
+      const fallbackResponses = [
+        "I'm here for you. Can you tell me more about how you're feeling?",
+        "Thanks for sharing that with me. I'm listening.",
+        "That sounds difficult. I'm here to support you.",
+      ];
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content:
+          fallbackResponses[
+            Math.floor(Math.random() * fallbackResponses.length)
+          ],
+        sender: "ai",
+        timestamp: new Date(),
+        severity,
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+      onUpdateSession(sessionId, title, aiResponse.content);
     }
 
     setIsTyping(false);
@@ -336,7 +247,6 @@ export function ChatInterface({
     }
   };
 
-  // Voice input functionality
   const startVoiceRecording = useCallback(() => {
     if (
       !("webkitSpeechRecognition" in window) &&
@@ -377,7 +287,6 @@ export function ChatInterface({
     }
   }, []);
 
-  // Emoji reactions
   const emojis = [
     { emoji: "👍", label: "thumbs up", icon: ThumbsUp },
     { emoji: "❤️", label: "heart", icon: Heart },
@@ -404,7 +313,6 @@ export function ChatInterface({
     setShowEmojiPicker(null);
   };
 
-  // Copy message to clipboard
   const copyMessage = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -413,7 +321,6 @@ export function ChatInterface({
     }
   };
 
-  // Text-to-speech
   const speakMessage = (content: string) => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(content);
@@ -429,7 +336,6 @@ export function ChatInterface({
     }
   }, [messages]);
 
-  // Update welcome message when language changes
   useEffect(() => {
     setMessages((prev) => {
       if (prev.length === 1 && prev[0].id === "1") {
@@ -463,7 +369,6 @@ export function ChatInterface({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Crisis Alert */}
       {hasCrisisMessage && (
         <div className="bg-destructive/90 backdrop-blur-sm text-destructive-foreground p-4 text-center animate-pulse border-b border-destructive/20">
           <AlertTriangle className="h-6 w-6 inline mr-2" />
@@ -474,12 +379,10 @@ export function ChatInterface({
         </div>
       )}
 
-      {/* Language Switcher */}
-      <div className="p-4 border-b border-border flex items-center justify-end bg-card/50">
+      <div className="p-4 border-b border-border flex items-center justify-between bg-card/50">
         <LanguageSwitcher />
       </div>
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full p-6" ref={scrollAreaRef}>
           <div className="max-w-4xl mx-auto space-y-6">
@@ -533,7 +436,6 @@ export function ChatInterface({
                     </div>
                   </div>
 
-                  {/* Message Actions */}
                   <div className="absolute -bottom-2 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Popover
                       open={showEmojiPicker === message.id}
@@ -591,7 +493,6 @@ export function ChatInterface({
                     )}
                   </div>
 
-                  {/* Reactions */}
                   {message.reactions && message.reactions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 ml-12">
                       {message.reactions.map((reaction, idx) => (
@@ -635,7 +536,6 @@ export function ChatInterface({
         </ScrollArea>
       </div>
 
-      {/* Input Area */}
       <div className="bg-card border-t border-border p-6 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex space-x-4">
@@ -650,7 +550,6 @@ export function ChatInterface({
               />
             </div>
 
-            {/* Voice Input Button */}
             <Button
               variant="outline"
               size="lg"
@@ -684,7 +583,6 @@ export function ChatInterface({
         </div>
       </div>
 
-      {/* Crisis Booking Dialog */}
       <Dialog open={showBookingPopup} onOpenChange={setShowBookingPopup}>
         <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>

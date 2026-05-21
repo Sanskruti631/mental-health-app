@@ -9,7 +9,9 @@
     "start": "next start",
     "db:init": "node scripts/run-db-scripts.js",
     "prisma:init": "prisma init --datasource-provider mysql",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "env:local": "powershell -ExecutionPolicy Bypass -File switch-env.ps1 local",
+    "env:friend": "powershell -ExecutionPolicy Bypass -File switch-env.ps1 friend"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

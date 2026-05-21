@@ -228,6 +228,11 @@ export function canAccessResource(user: User, resourceType: string, resourceId?:
   }
 }
 
+// Extract session token from request headers
+export function getSessionToken(request: Request): string | null {
+  return request.headers.get("cookie")?.split("session-token=")[1]?.split(";")[0] ?? null
+}
+
 // Security headers for API responses
 export function getSecurityHeaders(): Record<string, string> {
   return {

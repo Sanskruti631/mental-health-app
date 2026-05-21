@@ -1,89 +1,93 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ChatInterface } from "@/components/chat-interface"
-import { ChatSidebar } from "@/components/chat-sidebar"
-import { WellnessSidebar } from "@/components/wellness-sidebar"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import "@/lib/i18n";
+import { ChatInterface } from "@/components/chat-interface";
+import { ChatSidebar } from "@/components/chat-sidebar";
+import { WellnessSidebar } from "@/components/wellness-sidebar";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 interface ChatSession {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: Date
-  unreadCount?: number
+  id: string;
+  title: string;
+  lastMessage: string;
+  timestamp: Date;
+  unreadCount?: number;
 }
 
 export default function ChatPage() {
+  const { t } = useTranslation();
+
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: "1",
-      title: "Mental Health Support",
+      title: t("mentalHealthSupport"),
       lastMessage: "Hello! I'm your AI mental health support assistant...",
       timestamp: new Date(),
     },
-  ])
-  const [activeSessionId, setActiveSessionId] = useState("1")
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  ]);
+  const [activeSessionId, setActiveSessionId] = useState("1");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     // Check for saved dark mode preference
-    const saved = localStorage.getItem("darkMode")
+    const saved = localStorage.getItem("darkMode");
     if (saved) {
-      setIsDarkMode(JSON.parse(saved))
+      setIsDarkMode(JSON.parse(saved));
     }
 
     // Check for saved sidebar state
-    const sidebarState = localStorage.getItem("sidebarCollapsed")
+    const sidebarState = localStorage.getItem("sidebarCollapsed");
     if (sidebarState) {
-      setSidebarCollapsed(JSON.parse(sidebarState))
+      setSidebarCollapsed(JSON.parse(sidebarState));
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     // Apply dark mode to document
     if (isDarkMode) {
-      document.documentElement.classList.add("dark")
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", JSON.stringify(isDarkMode))
-  }, [isDarkMode])
+    localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
 
   useEffect(() => {
     // Save sidebar state
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed))
-  }, [sidebarCollapsed])
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const handleNewSession = () => {
     const newSession: ChatSession = {
       id: Date.now().toString(),
-      title: "New Conversation",
-      lastMessage: "Start a new conversation...",
+      title: t("newConversation"),
+      lastMessage: t("startNewConversation"),
       timestamp: new Date(),
-    }
-    setSessions(prev => [newSession, ...prev])
-    setActiveSessionId(newSession.id)
-  }
+    };
+    setSessions((prev) => [newSession, ...prev]);
+    setActiveSessionId(newSession.id);
+  };
 
   const handleDeleteSession = (id: string) => {
-    setSessions(prev => prev.filter(session => session.id !== id))
+    setSessions((prev) => prev.filter((session) => session.id !== id));
     if (activeSessionId === id && sessions.length > 1) {
-      const remainingSessions = sessions.filter(session => session.id !== id)
-      setActiveSessionId(remainingSessions[0].id)
+      const remainingSessions = sessions.filter((session) => session.id !== id);
+      setActiveSessionId(remainingSessions[0].id);
     }
-  }
+  };
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-  }
+    setIsDarkMode(!isDarkMode);
+  };
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed)
-  }
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
 
   return (
     <div className="h-screen flex bg-background overflow-hidden">
@@ -107,7 +111,7 @@ export default function ChatPage() {
           <Button variant="ghost" asChild>
             <Link href="/" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Home
+              {t("backToHome")}
             </Link>
           </Button>
         </div>
@@ -115,14 +119,16 @@ export default function ChatPage() {
           sessionId={activeSessionId}
           isDarkMode={isDarkMode}
           onUpdateSession={(id, title, lastMessage) => {
-            setSessions(prev => prev.map(session =>
-              session.id === id
-                ? { ...session, title, lastMessage, timestamp: new Date() }
-                : session
-            ))
+            setSessions((prev) =>
+              prev.map((session) =>
+                session.id === id
+                  ? { ...session, title, lastMessage, timestamp: new Date() }
+                  : session,
+              ),
+            );
           }}
         />
       </div>
     </div>
-  )
+  );
 }

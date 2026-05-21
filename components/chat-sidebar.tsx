@@ -151,13 +151,7 @@ export function ChatSidebar({
             </div>
           </ScrollArea>
 
-          {/* Footer */}
-          <div className="p-3 border-t border-border flex-shrink-0">
-            <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:bg-accent/50 rounded-lg h-9 text-sm font-normal px-3">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
-          </div>
+
         </>
       )}
     </div>

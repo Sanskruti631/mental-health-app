@@ -1,15 +1,32 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { AnimatedCounter } from "@/components/animated-counter"
-import { Heart, MessageCircle, Calendar, BookOpen, AlertCircle, Phone, Users, Brain, Activity } from "lucide-react"
-import Link from "next/link"
-import { UserMenu } from "@/components/user-menu"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { AnimatedCounter } from "@/components/animated-counter";
+import {
+  Heart,
+  MessageCircle,
+  Calendar,
+  BookOpen,
+  AlertCircle,
+  Phone,
+  Users,
+  Brain,
+  Activity,
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
+import { UserMenu } from "@/components/user-menu";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -19,7 +36,7 @@ const containerVariants = {
       staggerChildren: 0.1,
     },
   },
-}
+};
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -30,85 +47,98 @@ const cardVariants = {
       duration: 0.5,
     },
   },
-}
+};
 
 export default function StudentDashboard() {
-  const [studentInfo, setStudentInfo] = useState({ name: "", major: "", year: 0 })
-  const [assessments, setAssessments] = useState<any>(null)
-  const [appointments, setAppointments] = useState<any[]>([])
-  const [activities, setActivities] = useState<any[]>([])
-  const [showCrisisModal, setShowCrisisModal] = useState(false)
+  const [studentInfo, setStudentInfo] = useState({
+    name: "",
+    major: "",
+    year: 0,
+  });
+  const [assessments, setAssessments] = useState<any>(null);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [showCrisisModal, setShowCrisisModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, assessmentsRes, appointmentsRes, activitiesRes] = await Promise.all([
-          fetch("/api/student/profile"),
-          fetch("/api/student/assessments"),
-          fetch("/api/student/appointments"),
-          fetch("/api/student/activities"),
-        ])
+        const [profileRes, assessmentsRes, appointmentsRes, activitiesRes] =
+          await Promise.all([
+            fetch("/api/student/profile"),
+            fetch("/api/student/assessments"),
+            fetch("/api/student/appointments"),
+            fetch("/api/student/activities"),
+          ]);
 
-        if (profileRes.ok) setStudentInfo(await profileRes.json())
-        if (assessmentsRes.ok) setAssessments(await assessmentsRes.json())
-        if (appointmentsRes.ok) setAppointments(await appointmentsRes.json())
-        if (activitiesRes.ok) setActivities(await activitiesRes.json())
+        if (profileRes.ok) setStudentInfo(await profileRes.json());
+        if (assessmentsRes.ok) setAssessments(await assessmentsRes.json());
+        if (appointmentsRes.ok) setAppointments(await appointmentsRes.json());
+        if (activitiesRes.ok) setActivities(await activitiesRes.json());
       } catch (error) {
-        console.error("Failed to fetch student data:", error)
+        console.error("Failed to fetch student data:", error);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleCrisisSupport = () => {
-    setShowCrisisModal(true)
-  }
+    setShowCrisisModal(true);
+  };
 
   const handleScheduleAppointment = () => {
-    window.location.href = "/appointments"
-  }
+    window.location.href = "/appointments";
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "MessageCircle":
-        return <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        return (
+          <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        );
       case "Brain":
-        return <Brain className="h-4 w-4 text-green-600 dark:text-green-400" />
+        return <Brain className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case "BookOpen":
-        return <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        return (
+          <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        );
       default:
-        return <Activity className="h-4 w-4" />
+        return <Activity className="h-4 w-4" />;
     }
-  }
+  };
 
   const getActualIcon = (iconName: string) => {
     switch (iconName) {
       case "MessageCircle":
-        return <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        return (
+          <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        );
       case "Brain":
-        return <Brain className="h-4 w-4 text-green-600 dark:text-green-400" />
+        return <Brain className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case "BookOpen":
-        return <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        return (
+          <BookOpen className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        );
       default:
-        return <Activity className="h-4 w-4" />
+        return <Activity className="h-4 w-4" />;
     }
-  }
+  };
 
   const formatDate = (date: any) => {
-    if (!date) return "N/A"
-    const d = new Date(date)
-    const now = new Date()
-    const diff = now.getTime() - d.getTime()
-    const mins = Math.floor(diff / 60000)
-    const hours = Math.floor(diff / 3600000)
-    const days = Math.floor(diff / 86400000)
+    if (!date) return "N/A";
+    const d = new Date(date);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
 
-    if (mins < 60) return `${mins} minutes ago`
-    if (hours < 24) return `${hours} hours ago`
-    if (days < 7) return `${days} days ago`
-    return d.toLocaleDateString()
-  }
+    if (mins < 60) return `${mins} minutes ago`;
+    if (hours < 24) return `${hours} hours ago`;
+    if (days < 7) return `${days} days ago`;
+    return d.toLocaleDateString();
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-blue-950/20 dark:to-emerald-950/20">
       {/* Header */}
@@ -121,12 +151,27 @@ export default function StudentDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <motion.div className="bg-primary rounded-lg p-2" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Go back
+                </Button>
+              </Link>
+              <motion.div
+                className="bg-primary rounded-lg p-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Heart className="h-6 w-6 text-primary-foreground" />
               </motion.div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Welcome back, {studentInfo.name || "Student"}!</h1>
-                <p className="text-muted-foreground">{studentInfo.major || "Computer Science"} • {studentInfo.year || 3}rd Year</p>
+                <h1 className="text-2xl font-bold text-foreground">
+                  Welcome back, {studentInfo.name || "Student"}!
+                </h1>
+                <p className="text-muted-foreground">
+                  {studentInfo.major || "Computer Science"} •{" "}
+                  {studentInfo.year || 3}rd Year
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -154,7 +199,9 @@ export default function StudentDashboard() {
                 <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
                   <MessageCircle className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">AI Chat Support</h3>
-                  <p className="text-sm text-muted-foreground">24/7 mental health assistant</p>
+                  <p className="text-sm text-muted-foreground">
+                    24/7 mental health assistant
+                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -166,7 +213,9 @@ export default function StudentDashboard() {
                 <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
                   <Calendar className="h-8 w-8 text-green-500 mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">Book Counseling</h3>
-                  <p className="text-sm text-muted-foreground">Schedule with a counselor</p>
+                  <p className="text-sm text-muted-foreground">
+                    Schedule with a counselor
+                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -178,7 +227,9 @@ export default function StudentDashboard() {
                 <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
                   <BookOpen className="h-8 w-8 text-purple-500 mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">Resources</h3>
-                  <p className="text-sm text-muted-foreground">Self-help materials</p>
+                  <p className="text-sm text-muted-foreground">
+                    Self-help materials
+                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -190,7 +241,9 @@ export default function StudentDashboard() {
                 <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
                   <Brain className="h-8 w-8 text-emerald-500 mx-auto mb-3" />
                   <h3 className="font-semibold mb-1">Wellness Games</h3>
-                  <p className="text-sm text-muted-foreground">Refresh your mind</p>
+                  <p className="text-sm text-muted-foreground">
+                    Refresh your mind
+                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -211,10 +264,12 @@ export default function StudentDashboard() {
                     <Brain className="h-5 w-5 mr-2" />
                     Mental Health Status
                   </CardTitle>
-                  <CardDescription>Your latest screening results</CardDescription>
+                  <CardDescription>
+                    Your latest screening results
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {assessments && (
+                  {assessments ? (
                     <>
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -222,18 +277,33 @@ export default function StudentDashboard() {
                         transition={{ duration: 0.5, delay: 0.3 }}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">PHQ-9 (Depression)</span>
-                          <Badge variant="secondary">{assessments.phq9?.level}</Badge>
+                          <span className="text-sm font-medium">
+                            PHQ-9 (Depression)
+                          </span>
+                          <Badge variant="secondary">
+                            {assessments.phq9?.level || "No result"}
+                          </Badge>
                         </div>
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: "100%" }}
                           transition={{ duration: 1, delay: 0.5 }}
                         >
-                          <Progress value={(assessments.phq9?.score / assessments.phq9?.maxScore) * 100} className="h-2" />
+                          <Progress
+                            value={
+                              assessments.phq9?.score
+                                ? (assessments.phq9.score /
+                                    (assessments.phq9.maxScore || 27)) *
+                                  100
+                                : 0
+                            }
+                            className="h-2"
+                          />
                         </motion.div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Score: {assessments.phq9?.score}/{assessments.phq9?.maxScore} • Last updated {formatDate(assessments.phq9?.lastUpdated)}
+                          Score: {assessments.phq9?.score || 0}/
+                          {assessments.phq9?.maxScore || 27} • Last updated{" "}
+                          {formatDate(assessments.phq9?.lastUpdated)}
                         </p>
                       </motion.div>
 
@@ -243,18 +313,33 @@ export default function StudentDashboard() {
                         transition={{ duration: 0.5, delay: 0.4 }}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">GAD-7 (Anxiety)</span>
-                          <Badge variant="outline">{assessments.gad7?.level}</Badge>
+                          <span className="text-sm font-medium">
+                            GAD-7 (Anxiety)
+                          </span>
+                          <Badge variant="outline">
+                            {assessments.gad7?.level || "No result"}
+                          </Badge>
                         </div>
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: "100%" }}
                           transition={{ duration: 1, delay: 0.6 }}
                         >
-                          <Progress value={(assessments.gad7?.score / assessments.gad7?.maxScore) * 100} className="h-2" />
+                          <Progress
+                            value={
+                              assessments.gad7?.score
+                                ? (assessments.gad7.score /
+                                    (assessments.gad7.maxScore || 21)) *
+                                  100
+                                : 0
+                            }
+                            className="h-2"
+                          />
                         </motion.div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Score: {assessments.gad7?.score}/{assessments.gad7?.maxScore} • Last updated {formatDate(assessments.gad7?.lastUpdated)}
+                          Score: {assessments.gad7?.score || 0}/
+                          {assessments.gad7?.maxScore || 21} • Last updated{" "}
+                          {formatDate(assessments.gad7?.lastUpdated)}
                         </p>
                       </motion.div>
 
@@ -264,40 +349,73 @@ export default function StudentDashboard() {
                         transition={{ duration: 0.5, delay: 0.5 }}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">GHQ-12 (General Health)</span>
-                          <Badge variant="secondary">{assessments.ghq12?.level}</Badge>
+                          <span className="text-sm font-medium">
+                            GHQ-12 (General Health)
+                          </span>
+                          <Badge variant="secondary">
+                            {assessments.ghq12?.level || "No result"}
+                          </Badge>
                         </div>
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: "100%" }}
                           transition={{ duration: 1, delay: 0.7 }}
                         >
-                          <Progress value={(assessments.ghq12?.score / assessments.ghq12?.maxScore) * 100} className="h-2" />
+                          <Progress
+                            value={
+                              assessments.ghq12?.score
+                                ? (assessments.ghq12.score /
+                                    (assessments.ghq12.maxScore || 12)) *
+                                  100
+                                : 0
+                            }
+                            className="h-2"
+                          />
                         </motion.div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Score: {assessments.ghq12?.score}/{assessments.ghq12?.maxScore} • Last updated {formatDate(assessments.ghq12?.lastUpdated)}
+                          Score: {assessments.ghq12?.score || 0}/
+                          {assessments.ghq12?.maxScore || 12} • Last updated{" "}
+                          {formatDate(assessments.ghq12?.lastUpdated)}
                         </p>
                       </motion.div>
                     </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground mb-4">
+                        No screening results yet
+                      </p>
+                      <Link href="/quiz">
+                        <Button>Take Your First Assessment</Button>
+                      </Link>
+                    </div>
                   )}
 
                   <div className="flex space-x-2 pt-4">
                     <Link href="/quiz?type=phq9">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
                         <Button variant="outline" size="sm">
                           Retake PHQ-9
                         </Button>
                       </motion.div>
                     </Link>
                     <Link href="/quiz?type=gad7">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
                         <Button variant="outline" size="sm">
                           Retake GAD-7
                         </Button>
                       </motion.div>
                     </Link>
                     <Link href="/quiz?type=ghq12">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
                         <Button variant="outline" size="sm">
                           Retake GHQ-12
                         </Button>
@@ -322,23 +440,40 @@ export default function StudentDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <motion.div className="space-y-4" variants={containerVariants} initial="hidden" animate="visible">
+                  <motion.div
+                    className="space-y-4"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     {activities.length > 0 ? (
                       activities.map((activity, idx) => (
-                        <motion.div key={idx} className="flex items-center space-x-3" variants={cardVariants} whileHover={{ x: 5 }}>
-                          <div className={`bg-${activity.color}-100 dark:bg-${activity.color}-900 p-2 rounded-full`}>
+                        <motion.div
+                          key={idx}
+                          className="flex items-center space-x-3"
+                          variants={cardVariants}
+                          whileHover={{ x: 5 }}
+                        >
+                          <div
+                            className={`bg-${activity.color}-100 dark:bg-${activity.color}-900 p-2 rounded-full`}
+                          >
                             {getActualIcon(activity.icon)}
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium">{activity.title}</p>
+                            <p className="text-sm font-medium">
+                              {activity.title}
+                            </p>
                             <p className="text-xs text-muted-foreground">
-                              {activity.description} • {formatDate(activity.timestamp)}
+                              {activity.description} •{" "}
+                              {formatDate(activity.timestamp)}
                             </p>
                           </div>
                         </motion.div>
                       ))
                     ) : (
-                      <p className="text-center text-muted-foreground text-sm">No activities yet</p>
+                      <p className="text-center text-muted-foreground text-sm">
+                        No activities yet
+                      </p>
                     )}
                   </motion.div>
                 </CardContent>
@@ -363,16 +498,36 @@ export default function StudentDashboard() {
                   {appointments.length > 0 ? (
                     <>
                       {appointments.slice(0, 1).map((apt, idx) => (
-                        <motion.div key={idx} className="p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg" whileHover={{ scale: 1.02 }}>
-                          <p className="font-medium text-sm">Dr. {apt.therapist}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(apt.date).toLocaleDateString()}, {new Date(apt.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        <motion.div
+                          key={idx}
+                          className="p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg"
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <p className="font-medium text-sm">
+                            Dr. {apt.therapist}
                           </p>
-                          <p className="text-xs text-blue-600 dark:text-blue-400">{apt.type}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(apt.date).toLocaleDateString()},{" "}
+                            {new Date(apt.time).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400">
+                            {apt.type}
+                          </p>
                         </motion.div>
                       ))}
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button variant="outline" size="sm" className="w-full bg-transparent" onClick={handleScheduleAppointment}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-transparent"
+                          onClick={handleScheduleAppointment}
+                        >
                           <Calendar className="h-4 w-4 mr-2" />
                           Schedule New Appointment
                         </Button>
@@ -380,12 +535,27 @@ export default function StudentDashboard() {
                     </>
                   ) : (
                     <>
-                      <motion.div className="p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg" whileHover={{ scale: 1.02 }}>
-                        <p className="font-medium text-sm">No appointments scheduled</p>
-                        <p className="text-xs text-muted-foreground">Schedule your first counseling session</p>
+                      <motion.div
+                        className="p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <p className="font-medium text-sm">
+                          No appointments scheduled
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Schedule your first counseling session
+                        </p>
                       </motion.div>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button variant="outline" size="sm" className="w-full bg-transparent" onClick={handleScheduleAppointment}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full bg-transparent"
+                          onClick={handleScheduleAppointment}
+                        >
                           <Calendar className="h-4 w-4 mr-2" />
                           Schedule New Appointment
                         </Button>
@@ -403,15 +573,28 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <motion.div className="p-3 bg-green-50 dark:bg-green-950/50 rounded-lg" whileHover={{ scale: 1.02 }}>
-                    <p className="text-sm font-medium">Practice Deep Breathing</p>
+                  <motion.div
+                    className="p-3 bg-green-50 dark:bg-green-950/50 rounded-lg"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <p className="text-sm font-medium">
+                      Practice Deep Breathing
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Try the 4-7-8 technique: Inhale for 4, hold for 7, exhale for 8. Repeat 3-4 times.
+                      Try the 4-7-8 technique: Inhale for 4, hold for 7, exhale
+                      for 8. Repeat 3-4 times.
                     </p>
                   </motion.div>
                   <Link href="/wellness">
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button variant="outline" size="sm" className="w-full bg-transparent">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full bg-transparent"
+                      >
                         More Wellness Tools
                       </Button>
                     </motion.div>
@@ -430,14 +613,30 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button variant="destructive" size="sm" className="w-full" onClick={handleCrisisSupport}>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full"
+                      onClick={handleCrisisSupport}
+                    >
                       <Phone className="h-4 w-4 mr-2" />
                       Crisis Hotline
                     </Button>
                   </motion.div>
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button variant="outline" size="sm" className="w-full bg-transparent" onClick={() => window.location.href = "/help"}>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full bg-transparent"
+                      onClick={() => (window.location.href = "/help")}
+                    >
                       Emergency Resources
                     </Button>
                   </motion.div>
@@ -462,28 +661,56 @@ export default function StudentDashboard() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-red-600">Emergency Support</h2>
-                    <Button variant="ghost" size="sm" onClick={() => setShowCrisisModal(false)}>✕</Button>
+                    <h2 className="text-xl font-bold text-red-600">
+                      Emergency Support
+                    </h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowCrisisModal(false)}
+                    >
+                      ✕
+                    </Button>
                   </div>
                   <div className="space-y-4">
                     <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                      <p className="font-semibold text-red-600 dark:text-red-400 mb-2">National Crisis Hotline</p>
+                      <p className="font-semibold text-red-600 dark:text-red-400 mb-2">
+                        National Crisis Hotline
+                      </p>
                       <p className="text-2xl font-bold text-red-600">988</p>
-                      <p className="text-sm text-muted-foreground">Available 24/7</p>
+                      <p className="text-sm text-muted-foreground">
+                        Available 24/7
+                      </p>
                     </div>
                     <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                      <p className="font-semibold text-red-600 dark:text-red-400 mb-2">Text Support</p>
+                      <p className="font-semibold text-red-600 dark:text-red-400 mb-2">
+                        Text Support
+                      </p>
                       <p className="text-lg font-bold">Text HOME to 741741</p>
-                      <p className="text-sm text-muted-foreground">Crisis Text Line</p>
+                      <p className="text-sm text-muted-foreground">
+                        Crisis Text Line
+                      </p>
                     </div>
                     <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                      <p className="font-semibold text-blue-600 dark:text-blue-400 mb-2">Campus Resources</p>
+                      <p className="font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                        Campus Resources
+                      </p>
                       <p className="text-sm">Counseling Center: ext. 2468</p>
-                      <p className="text-sm text-muted-foreground">Monday-Friday, 8AM-5PM</p>
+                      <p className="text-sm text-muted-foreground">
+                        Monday-Friday, 8AM-5PM
+                      </p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button className="flex-1 bg-red-600 hover:bg-red-700">Call Now</Button>
-                      <Button variant="outline" className="flex-1" onClick={() => setShowCrisisModal(false)}>Close</Button>
+                      <Button className="flex-1 bg-red-600 hover:bg-red-700">
+                        Call Now
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setShowCrisisModal(false)}
+                      >
+                        Close
+                      </Button>
                     </div>
                   </div>
                 </motion.div>
@@ -493,5 +720,5 @@ export default function StudentDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

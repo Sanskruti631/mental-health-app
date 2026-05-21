@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
-function getSessionToken(request: Request): string | null {
-  return request.headers.get("cookie")?.split("session-token=")[1]?.split(";")[0] ?? null
-}
+import { getSessionToken } from "@/lib/auth-utils";
 
 export async function GET(request: Request) {
   try {
