@@ -1,14 +1,28 @@
+"use client";
+
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, MessageCircle, Phone, Mail } from "lucide-react"
+import { Search, MessageCircle, Phone, Mail, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function HelpPage() {
+  const router = useRouter()
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Help Center</h1>
           <p className="text-muted-foreground">Find answers to common questions and get support</p>

@@ -4,6 +4,31 @@ import { calculateClinicalScores } from "@/lib/questionnaire/scoreQuestionnaire"
 import { getSecurityHeaders } from "@/lib/auth-utils"
 import prisma from "@/lib/prisma"
 
+function getSessionToken(request: Request): string | null {
+  return request.headers.get("cookie")?.split("session-token=")[1]?.split(";")[0] ?? null
+}
+
+function getPhq9RiskLabel(score: number) {
+  if (score >= 20) return "Severe"
+  if (score >= 15) return "Moderately severe"
+  if (score >= 10) return "Moderate"
+  if (score >= 5) return "Mild"
+  return "Minimal"
+}
+
+function getGad7RiskLabel(score: number) {
+  if (score >= 15) return "Severe"
+  if (score >= 10) return "Moderate"
+  if (score >= 5) return "Mild"
+  return "Minimal"
+}
+
+function getGhq12RiskLabel(score: number) {
+  if (score >= 8) return "High"
+  if (score >= 4) return "Moderate"
+  return "Normal"
+}
+
 export async function POST(request: Request) {
   try {
     const json = await request.json()
@@ -19,9 +44,7 @@ export async function POST(request: Request) {
     const answers: QuestionnaireAnswer[] = json.answers
     const clinicalScores = calculateClinicalScores(answers)
 
-    // Get user ID from session if available
-    const sessionToken = request.headers.get("cookie")?.split("session-token=")[1]?.split(";")[0]
-    
+    const sessionToken = getSessionToken(request)
     if (sessionToken) {
       try {
         const session = await prisma.user_sessions.findFirst({
@@ -34,30 +57,48 @@ export async function POST(request: Request) {
         })
 
         if (session?.users) {
-          // Save questionnaire result to database
-          const questionnaireType = json.type || "PHQ-9" // Default type
+          const userId = session.users.id
 
-          await prisma.questionnaire_results.create({
-            data: {
-              user_id: session.users.id,
-              questionnaire_type: questionnaireType,
-              score: clinicalScores.overallRiskScore,
-              risk_level: clinicalScores.riskLevel,
-              responses: answers,
-            },
-          })
+          await prisma.$transaction([
+            prisma.questionnaire_results.create({
+              data: {
+                user_id: userId,
+                questionnaire_type: "PHQ-9",
+                score: clinicalScores.phq9,
+                risk_level: getPhq9RiskLabel(clinicalScores.phq9),
+                responses: JSON.parse(JSON.stringify(answers)),
+              },
+            }),
+            prisma.questionnaire_results.create({
+              data: {
+                user_id: userId,
+                questionnaire_type: "GAD-7",
+                score: clinicalScores.gad7,
+                risk_level: getGad7RiskLabel(clinicalScores.gad7),
+                responses: JSON.parse(JSON.stringify(answers)),
+              },
+            }),
+            prisma.questionnaire_results.create({
+              data: {
+                user_id: userId,
+                questionnaire_type: "GHQ-12",
+                score: clinicalScores.ghq12,
+                risk_level: getGhq12RiskLabel(clinicalScores.ghq12),
+                responses: JSON.parse(JSON.stringify(answers)),
+              },
+            }),
+          ])
         }
       } catch (dbError) {
         console.error("Error saving questionnaire result:", dbError)
-        // Don't fail the request if database save fails
       }
     }
 
     return NextResponse.json(
-      { 
-        score: clinicalScores.overallRiskScore, 
+      {
+        score: clinicalScores.overallRiskScore,
         riskLevel: clinicalScores.riskLevel,
-        clinicalScores 
+        clinicalScores,
       },
       { headers: getSecurityHeaders() }
     )

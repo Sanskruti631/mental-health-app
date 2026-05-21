@@ -18,7 +18,7 @@ import {
   BookOpen,
   Brain,
 } from "lucide-react";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguageSwitcher } from "@/components/language-switche";
 import { useTranslation } from "react-i18next";
 
 export function Navigation() {
