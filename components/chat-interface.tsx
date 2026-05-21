@@ -1,12 +1,20 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import type React from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   Send,
   Bot,
@@ -21,58 +29,84 @@ import {
   Frown,
   Angry,
   Copy,
-  MoreVertical,
   Volume2,
-  VolumeX
-} from "lucide-react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Message {
-  id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: Date
-  severity?: "low" | "medium" | "high" | "crisis"
-  reactions?: string[]
-  isTyping?: boolean
+  id: string;
+  content: string;
+  sender: "user" | "ai";
+  timestamp: Date;
+  severity?: "low" | "medium" | "high" | "crisis";
+  reactions?: string[];
+  isTyping?: boolean;
 }
 
 interface ChatInterfaceProps {
-  sessionId: string
-  isDarkMode: boolean
-  onUpdateSession: (id: string, title: string, lastMessage: string) => void
+  sessionId: string;
+  isDarkMode: boolean;
+  onUpdateSession: (id: string, title: string, lastMessage: string) => void;
 }
 
 // Helper function to format time consistently (server and client)
 const formatTime = (date: Date): string => {
-  const hours = date.getHours()
-  const minutes = date.getMinutes()
-  const ampm = hours >= 12 ? 'PM' : 'AM'
-  const displayHours = hours % 12 || 12
-  const paddedMinutes = minutes.toString().padStart(2, '0')
-  return `${displayHours}:${paddedMinutes} ${ampm}`
-}
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  const paddedMinutes = minutes.toString().padStart(2, "0");
+  return `${displayHours}:${paddedMinutes} ${ampm}`;
+};
 
-export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatInterfaceProps) {
+// Map language codes for speech recognition locales
+const LANGUAGE_LOCALE_MAP: Record<string, string> = {
+  en: "en-US",
+  hi: "hi-IN",
+  mr: "mr-IN",
+  ta: "ta-IN",
+  te: "te-IN",
+  bn: "bn-IN",
+};
+
+// Welcome messages by language
+const WELCOME_MESSAGES: Record<string, string> = {
+  en: "Hello! I'm your AI mental health support assistant. I'm here to listen, provide coping strategies, and help you navigate any challenges you're facing. How are you feeling today?",
+  hi: "नमस्ते! मैं आपका AI मानसिक स्वास्थ्य सहायक हूं। मैं सुनने के लिए, सामना करने की రణనీతियां प्रदान करने के लिए, और आप जिन चुनौतियों का सामना कर रहे हैं उन्हें नेविगेट करने में मदद करने के लिए यहां हूं। आज आप कैसा महసూస్ कर रहे हैं?",
+  mr: "नमस्कार! मी तुमचा AI मानसिक आरोग्य सहाय्यक आहे. मी ऐकण्यासाठी, सामना करण्याच्या धोरणे प्रदान करण्यासाठी आणि तुम्ही ज्या आव्हानांचा सामना करत आहात त्यांना नेव्हిగेट करण्यात मદત करण्यासाठी येथे आहे. आज तुम्हाला कसे वाटत आहे?",
+  ta: "வணக்கம்! நான் உங்கள் AI மனநல உதவியாளர். நான் கேட்க, எதிர்கொள்ளும் உத்திகளை வழங்க, நீங்கள் எதிர்கொள்ளும் சவால்களில் வழிநடத்த உதவ இங்கு இருக்கிறேன். இன்று எப்படி இருக்கிறீர்கள்?",
+  te: "నమస్కారం! నేను మీ AI మానసిక ఆరోగ్య సహాయకుడి. నేను వినడానికి, ఎదుర్కోవే వ్యూహాలను అందించడానికి మరియు మీరు ఎదుర్కొనే సవాళ్లను నావిగేట్ చేయడంలో సహాయం చేయడానికి ఇక్కడ ఉన్నాను. ఈ రోజు మీరు ఎలా భావిస్తున్నారు?",
+  bn: "নমস্কার! আমি আপনার AI মানসিক স্বাস্থ্য সহায়ক। আমি শুনতে, মোকাবেলার কৌশল প্রদান করতে এবং আপনি যে চ্যালেঞ্জগুলির মুখোমুখি হচ্ছেন সেগুলি নেভিগেট করতে সাহায্য করার জন্য এখানে আছি। আজ আপনি কেমন অনুভব করছেন?",
+};
+
+export function ChatInterface({
+  sessionId,
+  isDarkMode,
+  onUpdateSession,
+}: ChatInterfaceProps) {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content:
-        "Hello! I'm your AI mental health support assistant. I'm here to listen, provide coping strategies, and help you navigate any challenges you're facing. How are you feeling today?",
+      content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
       sender: "ai",
       timestamp: new Date(),
     },
-  ])
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const [showBookingPopup, setShowBookingPopup] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  ]);
+  const [inputValue, setInputValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showBookingPopup, setShowBookingPopup] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Voice recognition
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<any>(null);
 
   // Crisis keywords for detection
   const crisisKeywords = [
@@ -84,9 +118,9 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
     "want to die",
     "no point living",
     "better off dead",
-  ]
+  ];
 
-  // Mental health responses database
+  // Mental health responses database (fallback)
   const responses = {
     greeting: [
       "I'm glad you reached out today. Sharing how you feel takes courage. What's on your mind?",
@@ -109,153 +143,239 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
       "Chronic stress affects both your mind and body. Are you getting enough sleep, nutrition, and physical activity?",
     ],
     crisis: [
-      "I'm very concerned about what you've shared. Your life has value and meaning. Please reach out to a crisis counselor immediately at 988 (Suicide & Crisis Lifeline) or text 'HELLO' to 741741.",
-      "You're going through something incredibly difficult right now, but you don't have to face this alone. Please contact emergency services (911) or the National Suicide Prevention Lifeline at 988 immediately.",
-      "What you're feeling right now is temporary, even though it doesn't feel that way. Please reach out for immediate help: Call 988, text 741741, or go to your nearest emergency room. Your life matters.",
+      "I'm very concerned about what you've shared. Your life has value and meaning. Please reach out to a crisis counselor immediately - iCall (TISS): 9152987821 or Vandrevala Foundation: 1860 2662 345.",
+      "You're going through something incredibly difficult right now, but you don't have to face this alone. Please contact emergency services immediately at 112, or call AASRA Suicide Helpline: 9820466726.",
+      "What you're feeling right now is temporary, even though it doesn't feel that way. Please reach out for immediate help: Call 112 (Emergency), iCall: 9152987821, Vandrevala: 1860 2662 345, or AASRA: 9820466726. Your life matters.",
     ],
     support: [
       "Remember that seeking help is a sign of strength. You deserve support and care.",
       "You're taking an important step by talking about your feelings. That takes real courage.",
       "Your mental health matters, and you matter. There are people who want to help you through this.",
     ],
-  }
+  };
 
-  const detectSeverity = (message: string): "low" | "medium" | "high" | "crisis" => {
-    const lowerMessage = message.toLowerCase()
+  const detectSeverity = (
+    message: string,
+  ): "low" | "medium" | "high" | "crisis" => {
+    const lowerMessage = message.toLowerCase();
 
     // Crisis detection
     if (crisisKeywords.some((keyword) => lowerMessage.includes(keyword))) {
-      return "crisis"
+      return "crisis";
     }
 
     // High severity indicators
-    const highSeverityWords = ["panic", "can't cope", "overwhelming", "hopeless", "desperate"]
+    const highSeverityWords = [
+      "panic",
+      "can't cope",
+      "overwhelming",
+      "hopeless",
+      "desperate",
+    ];
     if (highSeverityWords.some((word) => lowerMessage.includes(word))) {
-      return "high"
+      return "high";
     }
 
     // Medium severity indicators
-    const mediumSeverityWords = ["anxious", "depressed", "stressed", "worried", "sad", "angry"]
+    const mediumSeverityWords = [
+      "anxious",
+      "depressed",
+      "stressed",
+      "worried",
+      "sad",
+      "angry",
+    ];
     if (mediumSeverityWords.some((word) => lowerMessage.includes(word))) {
-      return "medium"
+      return "medium";
     }
 
-    return "low"
-  }
+    return "low";
+  };
 
   const generateResponse = (userMessage: string, severity: string): string => {
-    const lowerMessage = userMessage.toLowerCase()
+    const lowerMessage = userMessage.toLowerCase();
 
     if (severity === "crisis") {
-      return responses.crisis[Math.floor(Math.random() * responses.crisis.length)]
+      return responses.crisis[
+        Math.floor(Math.random() * responses.crisis.length)
+      ];
     }
 
-    if (lowerMessage.includes("anxious") || lowerMessage.includes("anxiety") || lowerMessage.includes("panic")) {
-      return responses.anxiety[Math.floor(Math.random() * responses.anxiety.length)]
+    if (
+      lowerMessage.includes("anxious") ||
+      lowerMessage.includes("anxiety") ||
+      lowerMessage.includes("panic")
+    ) {
+      return responses.anxiety[
+        Math.floor(Math.random() * responses.anxiety.length)
+      ];
     }
 
-    if (lowerMessage.includes("depressed") || lowerMessage.includes("depression") || lowerMessage.includes("sad")) {
-      return responses.depression[Math.floor(Math.random() * responses.depression.length)]
+    if (
+      lowerMessage.includes("depressed") ||
+      lowerMessage.includes("depression") ||
+      lowerMessage.includes("sad")
+    ) {
+      return responses.depression[
+        Math.floor(Math.random() * responses.depression.length)
+      ];
     }
 
-    if (lowerMessage.includes("stress") || lowerMessage.includes("overwhelmed") || lowerMessage.includes("pressure")) {
-      return responses.stress[Math.floor(Math.random() * responses.stress.length)]
+    if (
+      lowerMessage.includes("stress") ||
+      lowerMessage.includes("overwhelmed") ||
+      lowerMessage.includes("pressure")
+    ) {
+      return responses.stress[
+        Math.floor(Math.random() * responses.stress.length)
+      ];
     }
 
-    if (lowerMessage.includes("hello") || lowerMessage.includes("hi") || lowerMessage.includes("hey")) {
-      return responses.greeting[Math.floor(Math.random() * responses.greeting.length)]
+    if (
+      lowerMessage.includes("hello") ||
+      lowerMessage.includes("hi") ||
+      lowerMessage.includes("hey")
+    ) {
+      return responses.greeting[
+        Math.floor(Math.random() * responses.greeting.length)
+      ];
     }
 
-    return responses.support[Math.floor(Math.random() * responses.support.length)]
-  }
+    return responses.support[
+      Math.floor(Math.random() * responses.support.length)
+    ];
+  };
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
+    if (!inputValue.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue,
       sender: "user",
       timestamp: new Date(),
-    }
+    };
 
-    const severity = detectSeverity(inputValue)
-    userMessage.severity = severity
+    const severity = detectSeverity(inputValue);
+    userMessage.severity = severity;
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue("")
-    setIsTyping(true)
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setIsTyping(true);
 
     // Update session title and last message
-    const title = inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue
-    onUpdateSession(sessionId, title, inputValue)
+    const title =
+      inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue;
+    onUpdateSession(sessionId, title, inputValue);
 
     if (severity === "high" || severity === "crisis") {
-      setTimeout(() => setShowBookingPopup(true), 2000)
+      setTimeout(() => setShowBookingPopup(true), 2000);
     }
 
-    setTimeout(
-      () => {
+    try {
+      // Call the actual chat API
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: inputValue,
+          history: messages.map((msg) => ({
+            role: msg.sender,
+            content: msg.content,
+          })),
+          language: i18n.language,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
-          content: generateResponse(inputValue, severity),
+          content: data.reply,
           sender: "ai",
           timestamp: new Date(),
-          severity,
-        }
+          severity: data.risk as any,
+        };
 
-        setMessages((prev) => [...prev, aiResponse])
-        setIsTyping(false)
+        setMessages((prev) => [...prev, aiResponse]);
+        onUpdateSession(sessionId, title, data.reply);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      // Fallback to local response if API fails
+      setTimeout(
+        () => {
+          const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            content: generateResponse(inputValue, severity),
+            sender: "ai",
+            timestamp: new Date(),
+            severity,
+          };
 
-        // Update session with AI response
-        onUpdateSession(sessionId, title, aiResponse.content)
-      },
-      1000 + Math.random() * 2000,
-    )
-  }
+          setMessages((prev) => [...prev, aiResponse]);
+          setIsTyping(false);
+
+          // Update session with AI response
+          onUpdateSession(sessionId, title, aiResponse.content);
+        },
+        1000 + Math.random() * 2000,
+      );
+    }
+
+    setIsTyping(false);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
+      e.preventDefault();
+      handleSendMessage();
     }
-  }
+  };
 
   // Voice input functionality
   const startVoiceRecording = useCallback(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Voice recognition is not supported in this browser.')
-      return
+    if (
+      !("webkitSpeechRecognition" in window) &&
+      !("SpeechRecognition" in window)
+    ) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    recognitionRef.current = new SpeechRecognition()
-    recognitionRef.current.continuous = false
-    recognitionRef.current.interimResults = false
-    recognitionRef.current.lang = 'en-US'
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = LANGUAGE_LOCALE_MAP[i18n.language] || "en-US";
 
     recognitionRef.current.onstart = () => {
-      setIsRecording(true)
-    }
+      setIsRecording(true);
+    };
 
     recognitionRef.current.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
-      setInputValue(transcript)
-    }
+      const transcript = event.results[0][0].transcript;
+      setInputValue(transcript);
+    };
 
     recognitionRef.current.onend = () => {
-      setIsRecording(false)
-    }
+      setIsRecording(false);
+    };
 
-    recognitionRef.current.start()
-  }, [])
+    recognitionRef.current.start();
+  }, [i18n.language]);
 
   const stopVoiceRecording = useCallback(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      setIsRecording(false)
+      recognitionRef.current.stop();
+      setIsRecording(false);
     }
-  }, [])
+  }, []);
 
   // Emoji reactions
   const emojis = [
@@ -264,63 +384,82 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
     { emoji: "😂", label: "laugh", icon: Laugh },
     { emoji: "😢", label: "sad", icon: Frown },
     { emoji: "😠", label: "angry", icon: Angry },
-  ]
+  ];
 
   const addReaction = (messageId: string, emoji: string) => {
-    setMessages(prev => prev.map(msg =>
-      msg.id === messageId
-        ? {
-            ...msg,
-            reactions: msg.reactions
-              ? msg.reactions.includes(emoji)
-                ? msg.reactions.filter(r => r !== emoji)
-                : [...msg.reactions, emoji]
-              : [emoji]
-          }
-        : msg
-    ))
-    setShowEmojiPicker(null)
-  }
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              reactions: msg.reactions
+                ? msg.reactions.includes(emoji)
+                  ? msg.reactions.filter((r) => r !== emoji)
+                  : [...msg.reactions, emoji]
+                : [emoji],
+            }
+          : msg,
+      ),
+    );
+    setShowEmojiPicker(null);
+  };
 
   // Copy message to clipboard
   const copyMessage = async (content: string) => {
     try {
-      await navigator.clipboard.writeText(content)
+      await navigator.clipboard.writeText(content);
     } catch (err) {
-      console.error('Failed to copy message:', err)
+      console.error("Failed to copy message:", err);
     }
-  }
+  };
 
   // Text-to-speech
   const speakMessage = (content: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(content)
-      utterance.rate = 0.9
-      utterance.pitch = 1
-      window.speechSynthesis.speak(utterance)
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(content);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
     }
-  }
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages])
+  }, [messages]);
+
+  // Update welcome message when language changes
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === "1") {
+        return [
+          {
+            id: "1",
+            content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
+            sender: "ai",
+            timestamp: new Date(),
+          },
+        ];
+      }
+      return prev;
+    });
+  }, [i18n.language]);
 
   const getSeverityColor = (severity?: string) => {
     switch (severity) {
       case "crisis":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "high":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       default:
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
-  }
+  };
 
-  const hasCrisisMessage = messages.some((msg) => msg.severity === "crisis")
+  const hasCrisisMessage = messages.some((msg) => msg.severity === "crisis");
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -328,12 +467,17 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
       {hasCrisisMessage && (
         <div className="bg-destructive/90 backdrop-blur-sm text-destructive-foreground p-4 text-center animate-pulse border-b border-destructive/20">
           <AlertTriangle className="h-6 w-6 inline mr-2" />
-          <span className="font-semibold">Immediate Help Available</span>
+          <span className="font-semibold">{t("immediateHelpAvailable")}</span>
           <div className="mt-2 text-sm">
-            <div>Call 988 (Suicide & Crisis Lifeline) or Text HOME to 741741</div>
+            <div>{t("call988")}</div>
           </div>
         </div>
       )}
+
+      {/* Language Switcher */}
+      <div className="p-4 border-b border-border flex items-center justify-end bg-card/50">
+        <LanguageSwitcher />
+      </div>
 
       {/* Messages Area */}
       <div className="flex-1 overflow-hidden">
@@ -342,7 +486,9 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
             {messages.map((message, index) => (
               <div
                 key={message.id}
-                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-4 duration-500`}
+                className={`flex ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                } animate-in slide-in-from-bottom-4 duration-500`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="group relative max-w-[80%]">
@@ -365,13 +511,20 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-base leading-relaxed break-words">{message.content}</p>
+                        <p className="text-base leading-relaxed break-words">
+                          {message.content}
+                        </p>
                         <div className="flex items-center justify-between mt-3 gap-2">
                           <span className="text-xs opacity-70 flex-shrink-0">
                             {formatTime(message.timestamp)}
                           </span>
                           {message.severity && message.sender === "user" && (
-                            <Badge variant="outline" className={`text-xs ${getSeverityColor(message.severity)}`}>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${getSeverityColor(
+                                message.severity,
+                              )}`}
+                            >
                               {message.severity}
                             </Badge>
                           )}
@@ -382,9 +535,18 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
 
                   {/* Message Actions */}
                   <div className="absolute -bottom-2 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Popover open={showEmojiPicker === message.id} onOpenChange={(open) => setShowEmojiPicker(open ? message.id : null)}>
+                    <Popover
+                      open={showEmojiPicker === message.id}
+                      onOpenChange={(open) =>
+                        setShowEmojiPicker(open ? message.id : null)
+                      }
+                    >
                       <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="w-8 h-8 p-0 bg-background/80 backdrop-blur-sm border border-border rounded-full hover:bg-accent">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-8 h-8 p-0 bg-background/80 backdrop-blur-sm border border-border rounded-full hover:bg-accent"
+                        >
                           <Smile className="w-4 h-4" />
                         </Button>
                       </PopoverTrigger>
@@ -482,7 +644,7 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Share what's on your mind..."
+                placeholder={t("shareWhatsOnYourMind")}
                 className="text-base py-4 px-6 rounded-full border-2 border-input bg-background focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all duration-200"
                 disabled={isTyping}
               />
@@ -498,7 +660,7 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
                   ? "bg-destructive border-destructive text-destructive-foreground animate-pulse"
                   : "border-border bg-background hover:bg-accent"
               }`}
-              title={isRecording ? "Stop recording" : "Start voice input"}
+              title={isRecording ? t("stopRecording") : t("startVoiceInput")}
             >
               {isRecording ? (
                 <MicOff className="h-5 w-5" />
@@ -517,7 +679,7 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-3 text-center leading-relaxed">
-            This AI provides support but is not a replacement for professional mental health care.
+            {t("aiProvidesSupport")}
           </p>
         </div>
       </div>
@@ -527,24 +689,24 @@ export function ChatInterface({ sessionId, isDarkMode, onUpdateSession }: ChatIn
         <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-destructivetive" />
-              <span>Professional Help Recommended</span>
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <span>{t("professionalHelpRecommended")}</span>
             </DialogTitle>
-            <DialogDescription>
-              Based on your conversation, we recommend speaking with a professional counselor.
-              Would you like to schedule an appointment?
-            </DialogDescription>
+            <DialogDescription>{t("basedOnConversation")}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowBookingPopup(false)}>
-              Not Now
+            <Button
+              variant="outline"
+              onClick={() => setShowBookingPopup(false)}
+            >
+              {t("notNow")}
             </Button>
             <Button onClick={() => setShowBookingPopup(false)}>
-              Schedule Appointment
+              {t("scheduleAppointment")}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

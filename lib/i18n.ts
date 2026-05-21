@@ -23,7 +23,7 @@ if (!i18n.isInitialized) {
           startVoiceInput: "Start voice input",
           aiProvidesSupport: "This AI provides support but is not a replacement for professional mental health care.",
           immediateHelpAvailable: "Immediate Help Available",
-          call988: "Call 988 (Suicide & Crisis Lifeline) or Text HOME to 741741",
+          call988: "24x7 Crisis Helplines: 112 (Emergency), iCall: 9152987821, Vandrevala: 1860 2662 345, AASRA: 9820466726",
           professionalHelpRecommended: "Professional Help Recommended",
           basedOnConversation: "Based on your conversation, we recommend speaking with a professional counselor. Would you like to schedule an appointment?",
           notNow: "Not Now",
@@ -82,7 +82,7 @@ if (!i18n.isInitialized) {
           // Crisis Banner
           crisisSupportAvailable: "Crisis Support Available 24/7",
           crisisSupportDescription: "If you're experiencing a mental health emergency, immediate help is available.",
-          crisisHelpline: "Crisis Helpline : 18008914413",
+          crisisHelpline: "Crisis Helpline : 112 (24x7 Emergency)",
           emergencyResources: "Emergency Resources",
           // Stats Section
           statsSectionTitle: "Making a Difference",

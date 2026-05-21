@@ -119,9 +119,13 @@ export default function HelpPage() {
               <AccordionItem value="item-5">
                 <AccordionTrigger>What should I do in a mental health emergency?</AccordionTrigger>
                 <AccordionContent>
-                  If you're experiencing a mental health emergency or having thoughts of self-harm, please contact
-                  emergency services immediately (911) or call the National Suicide Prevention Lifeline at 988. Our
-                  platform also has a crisis support button available 24/7 on your dashboard.
+                  If you're experiencing a mental health emergency or having thoughts of self-harm, please contact emergency services immediately at 112. You can also reach these 24/7 crisis helplines:
+                  
+                  • iCall (TISS): 9152987821
+                  • Vandrevala Foundation: 1860 2662 345
+                  • AASRA Suicide Helpline: 9820466726
+                  
+                  Our platform also has crisis support available on your dashboard.
                 </AccordionContent>
               </AccordionItem>
 
