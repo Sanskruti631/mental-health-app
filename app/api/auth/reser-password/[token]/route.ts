@@ -7,11 +7,11 @@ const prisma = new PrismaClient()
 export async function POST(req: Request) {
   const { token, password } = await req.json()
 
-  const resetToken = await prisma.passwordResetToken.findUnique({
+  const resetToken = await prisma.password_reset_tokens.findUnique({
     where: { token },
   })
 
-  if (!resetToken || resetToken.expires < new Date()) {
+  if (!resetToken || resetToken.expires_at < new Date()) {
     return NextResponse.json(
       { message: "Invalid or expired token" },
       { status: 400 }
@@ -20,12 +20,14 @@ export async function POST(req: Request) {
 
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  await prisma.user.update({
-    where: { email: resetToken.email },
-    data: { password: hashedPassword },
+  await prisma.users.update({
+    where: { id: resetToken.user_id },
+    data: {
+    password_hash: hashedPassword,
+  },
   })
 
-  await prisma.passwordResetToken.delete({
+  await prisma.password_reset_tokens.delete({
     where: { token },
   })
 
