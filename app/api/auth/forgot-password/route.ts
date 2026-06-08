@@ -2,11 +2,13 @@ import { type NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
 import prisma from "@/lib/prisma"
 import { getSecurityHeaders, validateEmail } from "@/lib/auth-utils"
+import { sendPasswordResetEmail } from "@/lib/email"
 
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
 
+    // Validate email
     if (!email || typeof email !== "string") {
       return NextResponse.json(
         { error: "Email is required" },
@@ -21,15 +23,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Find user
     const user = await prisma.users.findUnique({
       where: { email },
       select: { id: true },
     })
 
     if (user) {
+      // Generate reset token
       const token = randomUUID()
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 mins
 
+      // Save token in database
       await prisma.password_reset_tokens.create({
         data: {
           user_id: user.id,
@@ -38,7 +43,17 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      console.log(`Password reset requested for ${email}. Token: ${token}`)
+      // Create reset link
+      const resetLink =
+`${process.env.NEXT_PUBLIC_APP_URL}/resetPassword/${token}`
+      try {
+        // Send email
+        await sendPasswordResetEmail(email, resetLink)
+
+        console.log(`Password reset email sent to ${email}`)
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError)
+      }
     }
 
     return NextResponse.json(
@@ -47,13 +62,23 @@ export async function POST(request: NextRequest) {
         message:
           "If an account exists with this email, you will receive a password reset link.",
       },
-      { status: 200, headers: getSecurityHeaders() }
+      {
+        status: 200,
+        headers: getSecurityHeaders(),
+      }
     )
   } catch (err) {
     console.error("Forgot password error:", err)
+
     return NextResponse.json(
-      { error: "Failed to process password reset request. Please try again." },
-      { status: 500, headers: getSecurityHeaders() }
+      {
+        error:
+          "Failed to process password reset request. Please try again.",
+      },
+      {
+        status: 500,
+        headers: getSecurityHeaders(),
+      }
     )
   }
 }

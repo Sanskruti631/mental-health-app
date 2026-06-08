@@ -62,6 +62,7 @@
     "mysql2": "^3.18.2",
     "next": "^16.2.2",
     "next-themes": "^0.4.6",
+    "nodemailer": "^8.0.10",
     "prisma": "^6.19.2",
     "react": "^18.3.1",
     "react-day-picker": "9.8.0",
@@ -79,6 +80,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "baseline-browser-mapping": "^2.9.19",
