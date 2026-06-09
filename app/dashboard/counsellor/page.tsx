@@ -392,14 +392,7 @@ export default function CounsellorDashboard() {
   View All Clients
 </Button>
 
-                <Button 
-  variant="outline"
-  className="w-full justify-start bg-transparent"
-  onClick={() => router.push("/messages")}
->
-  <MessageCircle className="h-4 w-4 mr-2" />
-  Send Message
-</Button>
+
 
 
               </CardContent>
