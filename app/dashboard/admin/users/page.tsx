@@ -14,6 +14,11 @@ import {
 
 export default function App() {
   const [users, setUsers] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+  totalUsers: 0,
+  activeToday: 0,
+  pendingApproval: 0,
+});
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: "", email: "", role: "User" });
@@ -22,16 +27,31 @@ export default function App() {
   const router = useRouter();
 
   // ✅ Load users from DB
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      const data = await res.json();
+
+      setUsers(data.users || []);
+      setStats(data.stats || {
+        totalUsers: 0,
+        activeToday: 0,
+        pendingApproval: 0,
+      });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  const fetchUsers = async () => {
-    const res = await fetch("/api/users");
-    const data = await res.json();
-    setUsers(data);
-  };
-
   // ✅ Delete user (DB)
   const handleDelete = async (id: string) => {
     await fetch("/api/users", {
@@ -42,7 +62,7 @@ export default function App() {
       body: JSON.stringify({ id }),
     });
 
-    fetchUsers(); // refresh
+    await fetchUsers(); // refresh
   };
 
   // ✅ Add user (DB)
@@ -60,7 +80,7 @@ export default function App() {
     setNewUser({ name: "", email: "", role: "User" });
     setIsModalOpen(false);
 
-    fetchUsers(); // refresh
+    await fetchUsers(); // refresh
   };
 
   const filteredUsers = users.filter((user) =>
@@ -160,7 +180,9 @@ export default function App() {
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-t hover:bg-gray-50">
                   <td className="p-4 flex items-center gap-3">
-                    <img src={user.avatar} className="w-10 h-10 rounded-full" />
+                    <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-semibold">
+  {user.name?.charAt(0).toUpperCase()}
+</div>
                     <div>
                       <p className="font-semibold">{user.name}</p>
                       <p className="text-sm text-gray-500">{user.email}</p>

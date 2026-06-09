@@ -143,7 +143,7 @@ export default function WellnessGames() {
               <Button variant="ghost" asChild className="mr-4">
                 <Link href="/" className="flex items-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
-                  Back
+                 
                 </Link>
               </Button>
               <div className="bg-emerald-500 rounded-lg p-2">
@@ -161,9 +161,6 @@ export default function WellnessGames() {
                   {moodPoints} pts
                 </Badge>
               </div>
-              <Link href="/dashboard/student">
-                <Button variant="outline">Back to Dashboard</Button>
-              </Link>
             </div>
           </div>
         </div>

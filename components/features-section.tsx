@@ -117,19 +117,22 @@ export function FeaturesSection() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
-                  size="lg"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <Headphones className="h-5 w-5 mr-2" />
-                  {t("crisisHelpline")}
-                </Button>
+  size="lg"
+  asChild
+  className="bg-red-600 hover:bg-red-700 text-white"
+>
+  <a href="tel:112">
+    <Headphones className="h-5 w-5 mr-2" />
+    {t("crisisHelpline")}
+              </a>
+              </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   asChild
                   className="border-red-600 text-red-600 hover:bg-red-50 bg-transparent"
                 >
-                  <Link href="/resources">{t("emergencyResources")}</Link>
+                  <Link href="/emergency">{t("emergencyResources")}</Link>
                 </Button>
               </div>
             </CardContent>

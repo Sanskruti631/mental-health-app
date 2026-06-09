@@ -1,138 +1,220 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TermsPage() {
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Terms of Service</h1>
-          <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="mb-6 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-emerald-50 transition-colors"
+          aria-label="Go Back"
+        >
+          <ArrowLeft className="h-6 w-6 text-emerald-700" />
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-emerald-800 mb-3">
+            Terms of Service
+          </h1>
+
+          <p className="text-gray-600">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
         </div>
 
         <div className="space-y-6">
-          <Card>
+
+          {/* Acceptance of Terms */}
+          <Card className="shadow-lg border-emerald-100">
             <CardHeader>
-              <CardTitle>Acceptance of Terms</CardTitle>
+              <CardTitle className="text-emerald-800">
+                Acceptance of Terms
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                By accessing and using SoulSupport's digital mental health platform, you agree to be bound by these Terms
-                of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are
-                prohibited from using this service.
+
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                By accessing and using SoulSupport, you agree to comply
+                with these Terms of Service and all applicable laws and
+                regulations. If you do not agree with these terms,
+                please discontinue the use of this platform.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* Service Description */}
+          <Card className="shadow-lg border-emerald-100">
             <CardHeader>
-              <CardTitle>Service Description</CardTitle>
+              <CardTitle className="text-emerald-800">
+                Service Description
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>SoulSupport provides:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Mental health screening and assessment tools</li>
-                <li>Connection to licensed mental health professionals</li>
-                <li>Progress tracking and wellness resources</li>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                SoulSupport provides:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Mental health assessments and self-screening tools</li>
+                <li>Appointment booking with counselors</li>
+                <li>AI-powered emotional support and guidance</li>
+                <li>Self-help resources and educational content</li>
                 <li>Crisis support and emergency resources</li>
               </ul>
-              <p className="mt-4">
-                Our services are designed to supplement, not replace, professional mental health care.
+
+              <p className="mt-4 text-gray-700">
+                Our services are designed to support students and do
+                not replace professional mental healthcare.
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* User Responsibilities */}
+          <Card className="shadow-lg border-emerald-100">
             <CardHeader>
-              <CardTitle>User Responsibilities</CardTitle>
+              <CardTitle className="text-emerald-800">
+                User Responsibilities
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>As a user, you agree to:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Provide accurate and complete information</li>
-                <li>Maintain the confidentiality of your account credentials</li>
-                <li>Use the service only for its intended purposes</li>
-                <li>Respect the privacy and rights of other users</li>
-                <li>Comply with all applicable laws and regulations</li>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                As a user, you agree to:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Provide accurate and truthful information.</li>
+                <li>Maintain the confidentiality of your account credentials.</li>
+                <li>Use SoulSupport responsibly and respectfully.</li>
+                <li>Not misuse the platform or attempt unauthorized access.</li>
+                <li>Comply with all applicable laws and regulations.</li>
               </ul>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* Medical Disclaimer */}
+          <Card className="shadow-lg border-red-200 bg-red-50">
             <CardHeader>
-              <CardTitle>Medical Disclaimer</CardTitle>
+              <CardTitle className="text-red-700">
+                Medical Disclaimer
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                <strong>Important:</strong> This platform provides educational information and screening tools but does
-                not provide medical advice, diagnosis, or treatment. Always seek the advice of qualified healthcare
-                providers with questions about your mental health.
-              </p>
-              <p className="mt-4">
-                In case of a mental health emergency, contact emergency services (911) or the National Suicide
-                Prevention Lifeline (988) immediately.
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy and Confidentiality</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                We are committed to protecting your privacy and maintaining the confidentiality of your mental health
-                information in accordance with HIPAA regulations and applicable privacy laws. Please review our Privacy
-                Policy for detailed information.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Limitation of Liability</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                SoulSupport and its affiliates shall not be liable for any indirect, incidental, special, consequential, or
-                punitive damages resulting from your use of the service. Our total liability shall not exceed the amount
-                paid by you for the service.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Modifications to Terms</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                We reserve the right to modify these terms at any time. Changes will be effective immediately upon
-                posting. Your continued use of the service after changes constitutes acceptance of the new terms.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
             <CardContent>
-              <p>For questions about these Terms of Service, please contact us at:</p>
-              <div className="mt-4">
+              <p className="text-gray-700">
+                <strong>Important:</strong> SoulSupport provides
+                educational information, assessments, and support tools.
+                It does not offer medical advice, diagnosis, or treatment.
+              </p>
+
+              <p className="mt-4 text-gray-700">
+                Always seek advice from qualified healthcare professionals
+                regarding mental health concerns.
+              </p>
+
+              <p className="mt-4 font-medium text-red-700">
+                In case of an emergency, call 112 immediately or contact
+                local emergency services.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Privacy */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Privacy and Confidentiality
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                We are committed to protecting your privacy and handling
+                your information responsibly. Please review our Privacy
+                Policy to understand how we collect, use, and safeguard
+                your information.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Limitation of Liability */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Limitation of Liability
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                SoulSupport shall not be liable for indirect or
+                consequential damages resulting from the use or inability
+                to use the platform. Users are encouraged to seek
+                professional assistance when needed.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Modifications */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Modifications to Terms
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                We reserve the right to update these Terms of Service at
+                any time. Continued use of SoulSupport after modifications
+                indicates acceptance of the revised terms.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Contact Information */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Contact Information
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                If you have questions regarding these Terms of Service,
+                please contact us:
+              </p>
+
+              <div className="space-y-2 text-gray-700">
                 <p>
-                  <strong>Email:</strong> legal@SoulSupport.edu
+                  <strong>Email:</strong> supportsoulsup2025@gmail.com
                 </p>
+
                 <p>
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Emergency Helpline:</strong> 112
                 </p>
+
                 <p>
-                  <strong>Address:</strong> 123 University Ave, Student Health Center, Campus, State 12345
+                  <strong>Platform:</strong> SoulSupport – Mental Health
+                  Support System for Higher Education Students
                 </p>
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>
-  )
+  );
 }

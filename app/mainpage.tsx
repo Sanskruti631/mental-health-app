@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+// @ts-ignore: side-effect import for i18n config (no types)
 import "../i18n"; // import i18n config
 import LanguageSelector from "../components/LanguageSelector";
 
