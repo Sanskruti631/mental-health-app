@@ -13,37 +13,21 @@ import Link from "next/link";
 interface ChatSession {
   id: string;
   title: string;
-  lastMessage: string;
-  timestamp: Date;
-  unreadCount?: number;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export default function ChatPage() {
   const { t } = useTranslation();
 
-  const [sessions, setSessions] = useState<ChatSession[]>([
-    {
-      id: "1",
-      title: t("mentalHealthSupport"),
-      lastMessage: "Hello! I'm your AI mental health support assistant...",
-      timestamp: new Date(),
-    },
-  ]);
-  const [activeSessionId, setActiveSessionId] = useState("1");
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     // Check for saved dark mode preference
     const saved = localStorage.getItem("darkMode");
     if (saved) {
       setIsDarkMode(JSON.parse(saved));
-    }
-
-    // Check for saved sidebar state
-    const sidebarState = localStorage.getItem("sidebarCollapsed");
-    if (sidebarState) {
-      setSidebarCollapsed(JSON.parse(sidebarState));
     }
   }, []);
 
@@ -57,52 +41,22 @@ export default function ChatPage() {
     localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
-  useEffect(() => {
-    // Save sidebar state
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed));
-  }, [sidebarCollapsed]);
-
-  const handleNewSession = () => {
-    const newSession: ChatSession = {
-      id: Date.now().toString(),
-      title: t("newConversation"),
-      lastMessage: t("startNewConversation"),
-      timestamp: new Date(),
-    };
-    setSessions((prev) => [newSession, ...prev]);
-    setActiveSessionId(newSession.id);
+  const handleNewChat = () => {
+    setCurrentSession(null);
   };
 
-  const handleDeleteSession = (id: string) => {
-    setSessions((prev) => prev.filter((session) => session.id !== id));
-    if (activeSessionId === id && sessions.length > 1) {
-      const remainingSessions = sessions.filter((session) => session.id !== id);
-      setActiveSessionId(remainingSessions[0].id);
-    }
-  };
-
-  const handleToggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+  const handleSelectSession = (session: ChatSession | null) => {
+    setCurrentSession(session);
   };
 
   return (
     <div className="h-screen flex bg-background overflow-hidden">
       <WellnessSidebar />
-      {/* Sidebar */}
+      {/* Chat Sidebar */}
       <ChatSidebar
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSessionSelect={setActiveSessionId}
-        onNewSession={handleNewSession}
-        onDeleteSession={handleDeleteSession}
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={handleToggleDarkMode}
-        isCollapsed={sidebarCollapsed}
-        onToggleSidebar={toggleSidebar}
+        onSelectSession={handleSelectSession}
+        selectedSessionId={currentSession?.id || null}
+        onNewChat={handleNewChat}
       />
 
       {/* Chat Area */}
@@ -116,17 +70,9 @@ export default function ChatPage() {
           </Button>
         </div>
         <ChatInterface
-          sessionId={activeSessionId}
+          currentSessionId={currentSession?.id || null}
           isDarkMode={isDarkMode}
-          onUpdateSession={(id, title, lastMessage) => {
-            setSessions((prev) =>
-              prev.map((session) =>
-                session.id === id
-                  ? { ...session, title, lastMessage, timestamp: new Date() }
-                  : session,
-              ),
-            );
-          }}
+          onUpdateSession={() => {}}
         />
       </div>
     </div>

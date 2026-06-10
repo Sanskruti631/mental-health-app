@@ -50,7 +50,7 @@ interface Message {
 }
 
 interface ChatInterfaceProps {
-  sessionId: string;
+  currentSessionId: string | null;
   isDarkMode: boolean;
   onUpdateSession: (id: string, title: string, lastMessage: string) => void;
 }
@@ -75,15 +75,15 @@ const LANGUAGE_LOCALE_MAP: Record<string, string> = {
 
 const WELCOME_MESSAGES: Record<string, string> = {
   en: "Hello! I'm SoulSupport, your AI mental health companion. I'm here to listen, support, and help you in any way I can. How are you feeling today?",
-  hi: "नमस्ते! मैं सोलसपोर्ट हूं, आपका AI मानसिक स्वास्थ्य साथी। मैं सुनने, समर्थन करने और आपकी मदद करने के लिए यहां हूं। आज आप कैसा महसूस कर रहे हैं?",
-  mr: "नमस्कार! मी सोलसपोर्ट आहे, तुमचा AI मानसिक आरोग्य साथी. मी ऐकण्यासाठी, समर्थन करण्यासाठी आणि तुमची मदत करण्यासाठी येथे आहे. आज तुम्हाला कसे वाटत आहे?",
-  ta: "வணக்கம்! நான் சோல்சப்போர்ட், உங்கள் AI மனநல தோழன். நான் கேட்க, ஆதரிக்க மற்றும் உங்களுக்கு உதவ இங்கு இருக்கிறேன். இன்று எப்படி இருக்கிறீர்கள்?",
+  hi: "नमस्ते! मैं सोलसपోర్ట్ हूं, आपका AI मानసिक स्वास्थ्य साथी। मैं सुनने, समर्थन करने और आपकी मदद करने के लिए यहां हूं। आज आप कैसा महसूस कर रहे हैं?",
+  mr: "नमस्कार! मी सोलसపోర్ట్ आहे, तुमचा AI मानसिक आरोग्य साथी. మీ ऐకన్యాసाठీ, समర్థన కర్మన్యాసాధీ తుమచి మదత కర్మన్యాసాధీ యెంది आहे. आज तुम्हाला కసే వాటత ఆహే?",
+  ta: "வணக்கம! நான் சோல்சப்போர்ட், உங்கள் AI மனநல தோழன். நான் கேட்க, ஆதரிக்க மற்றும் உங்களுக்கு உதவ இங்கு இருக்கிறேன். இன்று எப்படி இருக்கிறீர்கள்?",
   te: "నమస్కారం! నేను సోల్‌సపోర్ట్, మీ AI మానసిక ఆరోగ్య సహచరుడు. నేను వినడానికి, మద్దతు ఇవ్వడానికి మరియు మీకు సహాయం చేయడానికి ఇక్కడ ఉన్నాను. ఈ రోజు మీరు ఎలా భావిస్తున్నారు?",
   bn: "নমস্কার! আমি সোলসাপোর্ট, আপনার AI মানসিক স্বাস্থ্য সঙ্গী। আমি শুনতে, সমর্থন করতে এবং আপনাকে সাহায্য করতে এখানে আছি। আজ আপনি কেমন অনুভব করছেন?",
 };
 
 export function ChatInterface({
-  sessionId,
+  currentSessionId,
   isDarkMode,
   onUpdateSession,
 }: ChatInterfaceProps) {
@@ -96,17 +96,57 @@ export function ChatInterface({
       timestamp: new Date(),
     },
   ]);
+  const [currentChatSessionId, setCurrentChatSessionId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: "1",
-        content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
-        sender: "ai",
-        timestamp: new Date(),
-      },
-    ]);
-  }, [sessionId, i18n.language]);
+    if (currentSessionId) {
+      loadChatHistory(currentSessionId);
+    } else {
+      setMessages([
+        {
+          id: "1",
+          content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+      setCurrentChatSessionId(null);
+    }
+  }, [currentSessionId, i18n.language]);
+
+  const loadChatHistory = async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/ai-chat/sessions/${sessionId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.session && data.session.ai_messages) {
+          const loadedMessages = data.session.ai_messages.map((msg: any) => ({
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender === "user" ? "user" : "ai",
+            timestamp: new Date(msg.created_at),
+          }));
+          if (loadedMessages.length > 0) {
+            setMessages(loadedMessages);
+          } else {
+            setMessages([
+              {
+                id: "1",
+                content: WELCOME_MESSAGES[i18n.language] || WELCOME_MESSAGES.en,
+                sender: "ai",
+                timestamp: new Date(),
+              },
+            ]);
+          }
+          setCurrentChatSessionId(sessionId);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading chat history:", error);
+    }
+  };
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showBookingPopup, setShowBookingPopup] = useState(false);
@@ -175,10 +215,6 @@ export function ChatInterface({
     setInputValue("");
     setIsTyping(true);
 
-    const title =
-      inputValue.length > 50 ? inputValue.substring(0, 50) + "..." : inputValue;
-    onUpdateSession(sessionId, title, inputValue);
-
     const severity = detectSeverity(inputValue);
     userMessage.severity = severity;
 
@@ -197,12 +233,17 @@ export function ChatInterface({
             content: msg.content,
           })),
           language: i18n.language,
+          sessionId: currentChatSessionId,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
+        if (data.sessionId) {
+          setCurrentChatSessionId(data.sessionId);
+        }
+
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           content: data.reply,
@@ -212,7 +253,19 @@ export function ChatInterface({
         };
 
         setMessages((prev) => [...prev, aiResponse]);
-        onUpdateSession(sessionId, title, data.reply);
+
+        // Summarize chat after a few messages
+        if (messages.length + 2 === 3 && data.sessionId) {
+          try {
+            await fetch("/api/ai-chat/summarize", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId: data.sessionId }),
+            });
+          } catch (sumErr) {
+            console.error("Error summarizing chat:", sumErr);
+          }
+        }
       } else {
         throw new Error(data.error);
       }
@@ -234,7 +287,6 @@ export function ChatInterface({
         severity,
       };
       setMessages((prev) => [...prev, aiResponse]);
-      onUpdateSession(sessionId, title, aiResponse.content);
     }
 
     setIsTyping(false);

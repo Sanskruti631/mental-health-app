@@ -1,159 +1,120 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import {
-  Plus,
-  MessageSquare,
-  Bot,
-  User,
-  Trash2,
-  Settings,
-  Moon,
-  Sun,
-  Search,
-  PanelLeftOpen,
-  PanelLeftClose
-} from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Plus, MessageSquare, Trash2 } from "lucide-react";
 
 interface ChatSession {
-  id: string
-  title: string
-  lastMessage: string
-  timestamp: Date
-  unreadCount?: number
+  id: string;
+  title: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface ChatSidebarProps {
+  onSelectSession: (session: ChatSession | null) => void;
+  selectedSessionId: string | null;
+  onNewChat: () => void;
 }
 
 export function ChatSidebar({
-  sessions,
-  activeSessionId,
-  onSessionSelect,
-  onNewSession,
-  onDeleteSession,
-  isDarkMode,
-  onToggleDarkMode,
-  isCollapsed,
-  onToggleSidebar
-}: {
-  sessions: ChatSession[]
-  activeSessionId: string
-  onSessionSelect: (id: string) => void
-  onNewSession: () => void
-  onDeleteSession: (id: string) => void
-  isDarkMode: boolean
-  onToggleDarkMode: () => void
-  isCollapsed: boolean
-  onToggleSidebar: () => void
-}) {
-  const [searchQuery, setSearchQuery] = useState("")
+  onSelectSession,
+  selectedSessionId,
+  onNewChat
+}: ChatSidebarProps) {
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredSessions = sessions.filter(session =>
-    session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  const loadSessions = async () => {
+    try {
+      const res = await fetch("/api/ai-chat/sessions");
+      if (res.ok) {
+        const data = await res.json();
+        setSessions(data.sessions || []);
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      const res = await fetch(`/api/ai-chat/sessions/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        if (selectedSessionId === id) {
+          onSelectSession(null);
+        }
+        loadSessions();
+      }
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  };
 
   return (
-    <div className={`h-full bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out ${
-      isCollapsed ? 'w-16' : 'w-64'
-    }`}>
-      {/* Header with Toggle and Theme */}
-      <div className="p-3 border-b border-border flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className={`flex items-center space-x-2 ${isCollapsed ? 'hidden' : ''}`}>
-            <span className="font-semibold text-foreground text-sm uppercase tracking-wider opacity-60">Conversations</span>
-          </div>
-
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleSidebar}
-              className="w-8 h-8 p-0 rounded-md hover:bg-accent/50 flex-shrink-0"
-              title={isCollapsed ? "Show sidebar" : "Hide sidebar"}
-            >
-              {isCollapsed ? (
-                <PanelLeftOpen className="w-4 h-4" />
-              ) : (
-                <PanelLeftClose className="w-4 h-4" />
-              )}
-            </Button>
-
-            {!isCollapsed && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onToggleDarkMode}
-                className="w-8 h-8 p-0 rounded-md hover:bg-accent/50"
-              >
-                {isDarkMode ? (
-                  <Sun className="w-4 h-4 text-yellow-500" />
-                ) : (
-                  <Moon className="w-4 h-4 text-muted-foreground" />
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {!isCollapsed && (
-          <>
-            <div className="mt-3">
-              <Button
-                onClick={onNewSession}
-                className="w-full bg-primary/10 hover:bg-primary/20 text-primary rounded-lg shadow-none border border-primary/20 h-9 text-sm font-medium"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New chat
-              </Button>
-            </div>
-          </>
-        )}
+    <div className="w-64 border-r border-border bg-card flex flex-col">
+      <div className="p-4 border-b border-border">
+        <Button
+          className="w-full"
+          onClick={() => {
+            onNewChat();
+            loadSessions();
+          }}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Chat
+        </Button>
       </div>
-
-      {/* Sessions List - only show when expanded */}
-      {!isCollapsed && (
-        <>
-          <ScrollArea className="flex-1 p-1">
-            <div className="space-y-0">
-              {filteredSessions.map((session) => (
-                <div
-                  key={session.id}
-                  onClick={() => onSessionSelect(session.id)}
-                  className={`group relative px-3 py-2.5 rounded-lg cursor-pointer transition-colors duration-150 ${
-                    activeSessionId === session.id
-                      ? "bg-accent"
-                      : "hover:bg-accent/50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-normal text-foreground truncate text-sm flex-1">
-                      {session.title}
-                    </h3>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDeleteSession(session.id)
-                      }}
-                      className="w-6 h-6 p-0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive flex-shrink-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
+      <ScrollArea className="flex-1">
+        {loading ? (
+          <div className="p-4 text-center text-muted-foreground">
+            Loading...
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="p-4 text-center text-muted-foreground">
+            No chat sessions yet
+          </div>
+        ) : (
+          <div className="p-2">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className={`p-3 rounded-lg mb-2 cursor-pointer flex items-center justify-between group transition-colors ${
+                  selectedSessionId === session.id
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent"
+                }`}
+                onClick={() => onSelectSession(session)}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="text-sm truncate max-w-36">
+                    {session.title}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-
-
-        </>
-      )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 h-6 w-6"
+                  onClick={(e) => handleDeleteSession(e, session.id)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </ScrollArea>
     </div>
-  )
+  );
 }

@@ -68,14 +68,11 @@ model appointments {
 }
 
 model conversations {
-  id           String      @id @default(dbgenerated("(uuid())")) @db.Char(36)
-  student_id   String      @db.Char(36)
-  therapist_id String      @db.Char(36)
-  created_at   DateTime?   @default(now()) @db.Timestamp(0)
-  updated_at   DateTime?   @default(now()) @db.Timestamp(0)
-  messages     messages[]
-  student      users       @relation("conversations_student", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  therapist    users       @relation("conversations_therapist", fields: [therapist_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id           String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  student_id   String    @db.Char(36)
+  therapist_id String    @db.Char(36)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
 
   @@index([student_id], map: "idx_conversations_student_id")
   @@index([therapist_id], map: "idx_conversations_therapist_id")
@@ -96,15 +93,13 @@ model email_verification_tokens {
 }
 
 model messages {
-  id              String       @id @default(dbgenerated("(uuid())")) @db.Char(36)
-  conversation_id String       @db.Char(36)
-  sender_id       String       @db.Char(36)
-  message_text    String       @db.Text
-  is_read         Boolean?     @default(false)
-  created_at      DateTime?    @default(now()) @db.Timestamp(0)
-  updated_at      DateTime?    @default(now()) @db.Timestamp(0)
-  conversation    conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  sender          users        @relation(fields: [sender_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id              String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  conversation_id String    @db.Char(36)
+  sender_id       String    @db.Char(36)
+  message_text    String    @db.Text
+  is_read         Boolean?  @default(false)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @db.Timestamp(0)
 
   @@index([conversation_id], map: "idx_messages_conversation_id")
   @@index([sender_id], map: "idx_messages_sender_id")
@@ -114,13 +109,12 @@ model messages {
 model mood_entries {
   id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
   user_id    String    @db.Char(36)
-  mood_level Int       // 1-5 scale
-  activities Json?     // Array of activities
+  mood_level Int
+  activities Json?
   notes      String?   @db.Text
   date       DateTime  @db.Date
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
-  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, date], map: "unique_mood_per_day")
   @@index([user_id], map: "idx_mood_entries_user_id")
@@ -142,15 +136,14 @@ model password_reset_tokens {
 }
 
 model questionnaire_results {
-  id                String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
-  user_id           String    @db.Char(36)
-  questionnaire_type String   // "PHQ-9", "GAD-7", "GHQ-12"
-  score             Int
-  risk_level        String    // "minimal", "mild", "moderate", "severe"
-  responses         Json?     // Store user's responses
-  created_at        DateTime? @default(now()) @db.Timestamp(0)
-  updated_at        DateTime? @default(now()) @db.Timestamp(0)
-  user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                 String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id            String    @db.Char(36)
+  questionnaire_type String
+  score              Int
+  risk_level         String
+  responses          Json?
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @default(now()) @db.Timestamp(0)
 
   @@index([user_id], map: "idx_questionnaire_user_id")
   @@index([questionnaire_type], map: "idx_questionnaire_type")
@@ -158,27 +151,45 @@ model questionnaire_results {
 }
 
 model severity_assessments {
-  id                String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
-  user_id           String    @db.Char(36)
-  // Input features
-  phq9_score        Float
-  gad7_score        Float
-  ghq12_score       Float
-  quiz_score        Float
-  mood_avg          Float
-  mood_trend        Float
-  chat_neg          Float
-  // Output
-  risk_level        String    // "low", "moderate", "high", "crisis"
-  confidence        Float     // 0.0 - 1.0
-  probabilities     Json?     // All class probabilities
-  // Metadata
-  created_at        DateTime? @default(now()) @db.Timestamp(0)
-  user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id            String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id       String    @db.Char(36)
+  phq9_score    Float
+  gad7_score    Float
+  ghq12_score   Float
+  quiz_score    Float
+  mood_avg      Float
+  mood_trend    Float
+  chat_neg      Float
+  risk_level    String
+  confidence    Float
+  probabilities Json?
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
 
   @@index([user_id], map: "idx_severity_user_id")
   @@index([created_at], map: "idx_severity_created_at")
   @@index([risk_level], map: "idx_severity_risk_level")
+}
+
+model ai_chat_sessions {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id    String    @db.Char(36)
+  title      String    @default("New Chat") @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([user_id], map: "idx_ai_chat_sessions_user_id")
+  @@index([updated_at], map: "idx_ai_chat_sessions_updated_at")
+}
+
+model ai_chat_messages {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  session_id String    @db.Char(36)
+  sender     String    @db.VarChar(20)
+  content    String    @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([session_id], map: "idx_ai_chat_messages_session_id")
+  @@index([created_at], map: "idx_ai_chat_messages_created_at")
 }
 
 model student_profiles {
@@ -268,14 +279,8 @@ model users {
   appointment_notes                             appointment_notes[]
   appointments_appointments_student_idTousers   appointments[]              @relation("appointments_student_idTousers")
   appointments_appointments_therapist_idTousers appointments[]              @relation("appointments_therapist_idTousers")
-  conversations_student                         conversations[]             @relation("conversations_student")
-  conversations_therapist                       conversations[]             @relation("conversations_therapist")
   email_verification_tokens                     email_verification_tokens[]
-  messages                                      messages[]
-  mood_entries                                  mood_entries[]
   password_reset_tokens                         password_reset_tokens[]
-  questionnaire_results                         questionnaire_results[]
-  severity_assessments                          severity_assessments[]
   student_profiles                              student_profiles?
   therapist_availability                        therapist_availability[]
   therapist_profiles                            therapist_profiles?

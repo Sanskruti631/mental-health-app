@@ -130,7 +130,7 @@ function getPersonalizedTips(risk: string): string[] {
 
 export async function POST(req: Request) {
   try {
-    const { message, history, language = "en" } = await req.json();
+    const { message, history, language = "en", sessionId } = await req.json();
 
     if (!message) {
       return NextResponse.json(
@@ -147,6 +147,7 @@ export async function POST(req: Request) {
 
     const sessionToken = getSessionToken(req);
     let userId: string | null = null;
+    let chatSessionId: string | null = null;
     
     if (sessionToken) {
       try {
@@ -159,6 +160,25 @@ export async function POST(req: Request) {
         });
         if (session) {
           userId = session.user_id;
+          
+          // Create or get chat session
+          if (sessionId) {
+            chatSessionId = sessionId;
+            // Update chat session's updated_at
+            await prisma.ai_chat_sessions.updateMany({
+              where: { id: sessionId, user_id: userId },
+              data: { updated_at: new Date() }
+            });
+          } else {
+            // Create new chat session
+            const newChatSession = await prisma.ai_chat_sessions.create({
+              data: {
+                user_id: userId,
+                title: "New Chat"
+              }
+            });
+            chatSessionId = newChatSession.id;
+          }
         }
       } catch (e) {
         console.error("Session lookup error:", e);
@@ -323,10 +343,36 @@ RESPONSE RULES:
       }
     }
 
+    // Save chat messages to database
+    if (userId && chatSessionId) {
+      try {
+        // Save user message
+        await prisma.ai_chat_messages.create({
+          data: {
+            session_id: chatSessionId,
+            sender: "user",
+            content: message
+          }
+        });
+        
+        // Save AI message
+        await prisma.ai_chat_messages.create({
+          data: {
+            session_id: chatSessionId,
+            sender: "ai",
+            content: finalReply
+          }
+        });
+      } catch (dbErr) {
+        console.error("Error saving chat messages:", dbErr);
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
         reply: finalReply,
+        sessionId: chatSessionId,
         risk: riskResult.risk,
         confidence: riskResult.confidence,
         chat_neg: chat_neg,
