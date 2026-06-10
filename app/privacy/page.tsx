@@ -1,120 +1,194 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function PrivacyPage() {
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Privacy Policy</h1>
-          <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="mb-6 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-emerald-50 transition-colors"
+          aria-label="Go Back"
+        >
+          <ArrowLeft className="h-6 w-6 text-emerald-700" />
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-emerald-800 mb-3">
+            Privacy Policy
+          </h1>
+
+          <p className="text-gray-600">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
         </div>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Information We Collect</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>We collect information you provide directly to us, such as:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Personal information (name, email, phone number)</li>
-                <li>Mental health screening responses and assessment results</li>
-                <li>Communication preferences and appointment scheduling</li>
-                <li>Usage data and platform interactions</li>
-              </ul>
-            </CardContent>
-          </Card>
 
-          <Card>
+          {/* Information Collection */}
+          <Card className="shadow-lg border-emerald-100">
             <CardHeader>
-              <CardTitle>How We Use Your Information</CardTitle>
+              <CardTitle className="text-emerald-800">
+                Information We Collect
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>We use the information we collect to:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Provide mental health screening and assessment services</li>
-                <li>Connect you with appropriate counselors and therapists</li>
-                <li>Track your mental health progress over time</li>
-                <li>Send appointment reminders and important notifications</li>
-                <li>Improve our services and platform functionality</li>
-              </ul>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Information Sharing and Disclosure</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>We may share your information in the following circumstances:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>With healthcare professionals involved in your care</li>
-                <li>When required by law or to protect safety</li>
-                <li>With your explicit consent for specific purposes</li>
-                <li>In emergency situations to prevent harm</li>
-              </ul>
-              <p className="mt-4">
-                We do not sell, trade, or otherwise transfer your personal information to third parties for marketing
-                purposes.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Data Security</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>
-                We implement appropriate security measures to protect your personal information against unauthorized
-                access, alteration, disclosure, or destruction. This includes:
-              </p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Encryption of data in transit and at rest</li>
-                <li>Regular security audits and assessments</li>
-                <li>Access controls and authentication measures</li>
-                <li>Staff training on privacy and security protocols</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Rights</CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <p>You have the right to:</p>
-              <ul className="list-disc pl-6 space-y-1">
-                <li>Access and review your personal information</li>
-                <li>Request corrections to inaccurate data</li>
-                <li>Request deletion of your account and data</li>
-                <li>Opt-out of non-essential communications</li>
-                <li>File complaints about privacy practices</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Us</CardTitle>
-            </CardHeader>
             <CardContent>
-              <p>If you have questions about this Privacy Policy, please contact us at:</p>
-              <div className="mt-4">
+              <p className="mb-4 text-gray-700">
+                We collect information you provide directly to us, such as:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Personal information (name and email address)</li>
+                <li>Mental health assessment responses and results</li>
+                <li>Counseling appointment details</li>
+                <li>Communication preferences</li>
+                <li>Platform usage information to improve services</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Use of Information */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                How We Use Your Information
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                We use the collected information to:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Provide mental health support services</li>
+                <li>Facilitate counseling appointments</li>
+                <li>Deliver personalized resources and assessments</li>
+                <li>Send important updates and notifications</li>
+                <li>Enhance platform functionality and user experience</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Information Sharing */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Information Sharing and Disclosure
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                We may share information only in the following situations:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>With your consent</li>
+                <li>When required by applicable laws</li>
+                <li>During emergency situations to prevent harm</li>
+                <li>With authorized mental health professionals involved in your care</li>
+              </ul>
+
+              <p className="mt-4 text-gray-700">
+                <strong>
+                  We do not sell or share your personal information for marketing purposes.
+                </strong>
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Data Security */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Data Security
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                We implement appropriate measures to safeguard your data:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Secure authentication and access controls</li>
+                <li>Encrypted data storage and transmission</li>
+                <li>Regular security monitoring and updates</li>
+                <li>Privacy awareness practices for administrators</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* User Rights */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Your Rights
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                You have the right to:
+              </p>
+
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                <li>Access your personal information</li>
+                <li>Request corrections to inaccurate data</li>
+                <li>Request deletion of your account information</li>
+                <li>Withdraw consent for optional communications</li>
+                <li>Raise concerns regarding privacy practices</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Contact Information */}
+          <Card className="shadow-lg border-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-emerald-800">
+                Contact Us
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <p className="mb-4 text-gray-700">
+                If you have questions regarding this Privacy Policy, contact us:
+              </p>
+
+              <div className="space-y-2 text-gray-700">
                 <p>
-                  <strong>Email:</strong> privacy@soulsupport.edu
+                  <strong>Email:</strong> supportsoulsup2025@gmail.com
                 </p>
+
                 <p>
-                  <strong>Phone:</strong> +1 (555) 123-4567
+                  <strong>Emergency Helpline:</strong> 112
                 </p>
+
                 <p>
-                  <strong>Address:</strong> 123 University Ave, Student Health Center, Campus, State 12345
+                  <strong>Platform:</strong> SoulSupport – Mental Health Support System for Higher Education Students
                 </p>
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>
-  )
+  );
 }

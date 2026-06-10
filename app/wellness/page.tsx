@@ -5,7 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Play, Pause, RotateCcw, Leaf, Moon, Zap, Phone } from "lucide-react"
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Leaf,
+  Moon,
+  Zap,
+  Phone,
+  ArrowLeft,
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+
 
 const breathingExercises = [
   {
@@ -82,6 +93,7 @@ const wellnessTips = [
 ]
 
 export default function WellnessPage() {
+  const router = useRouter()
   const [activeTimer, setActiveTimer] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState(0)
   const [meditations, setMeditations] = useState<any[]>([])
@@ -156,15 +168,33 @@ export default function WellnessPage() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2 mb-4">
-            <div className="bg-primary rounded-lg p-3">
-              <Leaf className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <h1 className="text-3xl font-bold">Wellness Center</h1>
-          </div>
-          <p className="text-muted-foreground">Tools and resources for your mental and physical wellbeing</p>
-        </div>
+<div className="mb-8">
+
+  {/* Back Button */}
+  <button
+    onClick={() => router.back()}
+    className="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-emerald-100 transition-colors mb-6"
+  >
+    <ArrowLeft className="h-5 w-5 text-emerald-600" />
+  </button>
+
+  <div className="text-center">
+    <div className="inline-flex items-center space-x-2 mb-4">
+      <div className="bg-primary rounded-lg p-3">
+        <Leaf className="h-8 w-8 text-primary-foreground" />
+      </div>
+
+      <h1 className="text-3xl font-bold">
+        Wellness Center
+      </h1>
+    </div>
+
+    <p className="text-muted-foreground">
+      Tools and resources for your mental and physical wellbeing
+    </p>
+  </div>
+
+</div>
 
         <Tabs defaultValue="breathing" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
