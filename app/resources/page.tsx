@@ -1,73 +1,99 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { WellnessSidebar } from "@/components/wellness-sidebar"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { BookOpen, ExternalLink, Loader, Search, ArrowLeft } from "lucide-react"
-import { motion } from "framer-motion"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { WellnessSidebar } from "@/components/wellness-sidebar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  BookOpen,
+  ExternalLink,
+  Loader,
+  Search,
+  ArrowLeft,
+  PlayCircle,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 interface Resource {
-  id: number
-  title: string
-  category: string
-  type: string
-  description: string
-  url: string
-  duration: string
+  id: number;
+  title: string;
+  category: string;
+  type: string;
+  description: string;
+  url: string;
+  duration: string;
+  isEmbed?: boolean;
+  embedUrl?: string;
 }
 
 export default function ResourcesPage() {
-  const router = useRouter()
-  const { user, isAuthenticated, isLoading } = useAuth()
-  const [resources, setResources] = useState<Resource[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState<string>("All")
-  const [searchQuery, setSearchQuery] = useState<string>("")
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const res = await fetch("/api/wellness/resources")
+        const res = await fetch("/api/wellness/resources");
         if (res.ok) {
-          const data = await res.json()
-          setResources(data)
+          const data = await res.json();
+          setResources(data);
         }
       } catch (error) {
-        console.error("Error fetching resources:", error)
+        console.error("Error fetching resources:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    if (isAuthenticated) {
-      fetchResources()
-    }
-  }, [isAuthenticated])
+    };
 
-  const categories = ["All", ...new Set(resources.map((r) => r.category))]
+    if (isAuthenticated) {
+      fetchResources();
+    }
+  }, [isAuthenticated]);
+
+  const categories = ["All", ...new Set(resources.map((r) => r.category))];
   const filteredResources = resources.filter((resource) => {
-    const matchesCategory = selectedCategory === "All" || resource.category === selectedCategory
-    const matchesSearch = searchQuery === "" || 
+    const matchesCategory =
+      selectedCategory === "All" || resource.category === selectedCategory;
+    const matchesSearch =
+      searchQuery === "" ||
       resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.category.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+      resource.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (isLoading || !user) {
-    return <div className="p-6 text-foreground">Loading...</div>
+    return <div className="p-6 text-foreground">Loading...</div>;
   }
 
   return (
@@ -87,97 +113,165 @@ export default function ResourcesPage() {
               <BookOpen className="h-8 w-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-foreground">Learning Resources</h1>
-              <p className="text-muted-foreground mt-1">Helpful articles and guides for your mental health journey</p>
+              <h1 className="text-4xl font-bold text-foreground">
+                Learning Resources
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Helpful articles and guides for your mental health journey
+              </p>
             </div>
           </div>
         </div>
 
         {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search resources..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Search resources..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
+        </div>
 
-          {/* Category Filter */}
-          <div className="mb-8 flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <motion.div key={category} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  className="transition-all"
-                >
-                  {category}
-                </Button>
+        {/* Category Filter */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <motion.div
+              key={category}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className="transition-all"
+              >
+                {category}
+              </Button>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Resources Grid */}
+        {loading ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Loader className="h-8 w-8 animate-spin mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Loading resources...</p>
+            </CardContent>
+          </Card>
+        ) : filteredResources.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredResources.map((resource, index) => (
+              <motion.div
+                key={resource.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ y: -4 }}
+              >
+                <Card className="h-full hover:shadow-lg transition-shadow border-border">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      {resource.isEmbed && (
+                        <Badge variant="default" className="bg-red-500">
+                          Video
+                        </Badge>
+                      )}
+                      {!resource.isEmbed && (
+                        <Badge variant="secondary">{resource.type}</Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg line-clamp-2">
+                      {resource.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      {resource.category}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground line-clamp-3">
+                      {resource.description}
+                    </p>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        className="w-full"
+                        variant="default"
+                        onClick={() => {
+                          if (resource.isEmbed && resource.embedUrl) {
+                            setSelectedResource(resource);
+                          } else if (resource.url && resource.url !== "#") {
+                            window.open(
+                              resource.url,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                          } else {
+                            alert(`Placeholder for: ${resource.title}`);
+                          }
+                        }}
+                      >
+                        {resource.isEmbed ? (
+                          <>
+                            <PlayCircle className="h-4 w-4 mr-2" /> Watch Video
+                          </>
+                        ) : (
+                          <>
+                            <ExternalLink className="h-4 w-4 mr-2" /> Read More
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </div>
-
-          {/* Resources Grid */}
-          {loading ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Loader className="h-8 w-8 animate-spin mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Loading resources...</p>
-              </CardContent>
-            </Card>
-          ) : filteredResources.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResources.map((resource, index) => (
-                <motion.div
-                  key={resource.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <Card className="h-full hover:shadow-lg transition-shadow border-border">
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge variant="secondary">{resource.type}</Badge>
-                        <Badge variant="outline">{resource.duration}</Badge>
-                      </div>
-                      <CardTitle className="text-lg line-clamp-2">{resource.title}</CardTitle>
-                      <CardDescription className="text-sm">{resource.category}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-foreground line-clamp-3">{resource.description}</p>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button 
-                          className="w-full" 
-                          variant="default"
-                          onClick={() => {
-                            // For now, show an alert. In a real app, this would navigate to the resource
-                            alert(`Opening: ${resource.title}\n\nThis would navigate to the full article/guide in a real implementation.`)
-                          }}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Read More
-                        </Button>
-                      </motion.div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No resources found in this category</p>
-              </CardContent>
-            </Card>
-          )}
+        ) : (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                No resources found in this category
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
+      {/* Video Modal */}
+      <Dialog
+        open={!!selectedResource}
+        onOpenChange={() => setSelectedResource(null)}
+      >
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedResource?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedResource?.isEmbed && selectedResource.embedUrl && (
+            <div className="aspect-video w-full overflow-hidden rounded-lg">
+              <iframe
+                width="100%"
+                height="100%"
+                src={selectedResource.embedUrl}
+                title={selectedResource.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 }
