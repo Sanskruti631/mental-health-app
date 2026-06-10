@@ -18,6 +18,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   BookOpen,
@@ -254,6 +255,9 @@ export default function ResourcesPage() {
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>{selectedResource?.title}</DialogTitle>
+            <DialogDescription>
+              {selectedResource?.description}
+            </DialogDescription>
           </DialogHeader>
           {selectedResource?.isEmbed && selectedResource.embedUrl && (
             <div className="aspect-video w-full overflow-hidden rounded-lg">
