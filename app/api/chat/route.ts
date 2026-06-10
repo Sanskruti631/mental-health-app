@@ -225,14 +225,14 @@ export async function POST(req: Request) {
 
     if (userId) {
       try {
-        // Prisma client typings may not include severity_assessment depending on the schema
+        // Prisma client typings may not include severity_assessments depending on the schema
         // Cast to any to avoid TypeScript errors while still attempting to write to the DB
-        await (prisma as any).severity_assessment.create({
+        await (prisma as any).severity_assessments.create({
           data: {
             user_id: userId,
-            phq9: quizScores.phq9,
-            gad7: quizScores.gad7,
-            ghq12: quizScores.ghq12,
+            phq9_score: quizScores.phq9,
+            gad7_score: quizScores.gad7,
+            ghq12_score: quizScores.ghq12,
             quiz_score: quizScores.quiz,
             mood_avg: moodFeatures.mood_avg,
             mood_trend: moodFeatures.mood_trend === "declining" ? -1 : moodFeatures.mood_trend === "improving" ? 1 : 0,
@@ -271,7 +271,13 @@ RESPONSE RULES:
 7. For crisis: SHORT, urgent, safety-focused
 8. Reference what the user has shared
 9. Never mention you're analyzing data - just have a natural conversation
-10. Include relevant coping tips when appropriate`;
+10. Include relevant coping tips when appropriate
+11. When you identify a specific topic (anxiety, stress, depression, sleep issues/insomnia, or lust/porn addiction, you MUST recommend the appropriate resources from our Learning Resources page using markdown links like:
+    - For anxiety or stress: [Stress and Anxiety Resources](http://localhost:3000/resources?category=Stress%20and%20Anxiety)
+    - For depression: [Depression Resources](http://localhost:3000/resources?category=Depression)
+    - For sleep issues or insomnia: [Sleep Disorders Resources](http://localhost:3000/resources?category=Sleep%20Disorders%20%28Insomnia%29)
+    - For lust or porn addiction: [Lust Resources](http://localhost:3000/resources?category=Lust)
+12. Always make resource recommendations only when appropriate and relevant, and use the links above (use http://localhost:3000 as the base URL)`;
 
     const chatMessages: Array<{ role: string; content: string }> = [
       { role: "system", content: chatbotSystemPrompt }

@@ -415,22 +415,55 @@ export function ChatInterface({
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-base leading-relaxed break-words">
-                          {message.content}
+                          {message.content
+                            .split(/(\[.*?\]\(.*?\))/g)
+                            .map((part, i) => {
+                              const linkMatch =
+                                part.match(/\[(.*?)\]\((.*?)\)/);
+                              if (linkMatch) {
+                                const [, text, url] = linkMatch;
+                                return (
+                                  <a
+                                    key={i}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                                  >
+                                    {text}
+                                  </a>
+                                );
+                              }
+                              // Check for plain URLs
+                              const urlMatch =
+                                part.match(/(https?:\/\/[^\s]+)/g);
+                              if (urlMatch) {
+                                return part
+                                  .split(/(https?:\/\/[^\s]+)/g)
+                                  .map((subPart, j) => {
+                                    if (subPart.match(/https?:\/\/[^\s]+/)) {
+                                      return (
+                                        <a
+                                          key={`${i}-${j}`}
+                                          href={subPart}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary underline underline-offset-2 hover:text-primary/80 transition-colors"
+                                        >
+                                          {subPart}
+                                        </a>
+                                      );
+                                    }
+                                    return subPart;
+                                  });
+                              }
+                              return part;
+                            })}
                         </p>
                         <div className="flex items-center justify-between mt-3 gap-2">
                           <span className="text-xs opacity-70 flex-shrink-0">
                             {formatTime(message.timestamp)}
                           </span>
-                          {message.severity && message.sender === "user" && (
-                            <Badge
-                              variant="outline"
-                              className={`text-xs ${getSeverityColor(
-                                message.severity,
-                              )}`}
-                            >
-                              {message.severity}
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </div>

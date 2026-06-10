@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { WellnessSidebar } from "@/components/wellness-sidebar";
 import {
@@ -46,6 +46,7 @@ interface Resource {
 
 export default function ResourcesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +81,18 @@ export default function ResourcesPage() {
       fetchResources();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    // Check for category query parameter once resources are loaded
+    const categoryParam = searchParams.get("category");
+    if (categoryParam && resources.length > 0) {
+      // Check if the category exists in our resources
+      const validCategories = new Set(resources.map((r) => r.category));
+      if (validCategories.has(categoryParam)) {
+        setSelectedCategory(categoryParam);
+      }
+    }
+  }, [searchParams, resources]);
 
   const categories = ["All", ...new Set(resources.map((r) => r.category))];
   const filteredResources = resources.filter((resource) => {
