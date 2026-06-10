@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import {
   Calendar,
   TrendingUp,
@@ -15,8 +15,9 @@ import {
   Phone,
   Activity,
   Users,
-} from "lucide-react"
-import Link from "next/link"
+  ClipboardList,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function UserHomePage() {
   return (
@@ -24,15 +25,26 @@ export default function UserHomePage() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Your Mental Health Dashboard</h1>
-          <p className="text-lg text-gray-600">Track your wellbeing with standardized screening tools</p>
+          <h1 className="text-4xl font-bold text-gray-900">
+            Your Mental Health Dashboard
+          </h1>
+          <p className="text-lg text-gray-600">
+            Track your wellbeing with standardized screening tools
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <Link href="/chat">
             <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700">
               <MessageCircle className="h-6 w-6" />
               <span className="text-sm font-medium">AI Chatbot</span>
+            </Button>
+          </Link>
+
+          <Link href="/quiz">
+            <Button className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700">
+              <ClipboardList className="h-6 w-6" />
+              <span className="text-sm font-medium">Take Assessment</span>
             </Button>
           </Link>
 
@@ -76,7 +88,9 @@ export default function UserHomePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600 mb-2">Good</div>
-              <p className="text-sm text-gray-600">Based on your recent assessments</p>
+              <p className="text-sm text-gray-600">
+                Based on your recent assessments
+              </p>
             </CardContent>
           </Card>
 
@@ -88,8 +102,12 @@ export default function UserHomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600 mb-2">3 days ago</div>
-              <p className="text-sm text-gray-600">Next recommended: In 4 days</p>
+              <div className="text-2xl font-bold text-blue-600 mb-2">
+                3 days ago
+              </div>
+              <p className="text-sm text-gray-600">
+                Next recommended: In 4 days
+              </p>
             </CardContent>
           </Card>
 
@@ -101,8 +119,12 @@ export default function UserHomePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600 mb-2">Improving</div>
-              <p className="text-sm text-gray-600">15% better than last month</p>
+              <div className="text-2xl font-bold text-purple-600 mb-2">
+                Improving
+              </div>
+              <p className="text-sm text-gray-600">
+                15% better than last month
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -148,11 +170,16 @@ export default function UserHomePage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>PHQ-9 Depression Scale</span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
                   Low Risk
                 </Badge>
               </CardTitle>
-              <p className="text-sm text-gray-600">Patient Health Questionnaire</p>
+              <p className="text-sm text-gray-600">
+                Patient Health Questionnaire
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -195,11 +222,16 @@ export default function UserHomePage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>GAD-7 Anxiety Scale</span>
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                <Badge
+                  variant="outline"
+                  className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                >
                   Mild
                 </Badge>
               </CardTitle>
-              <p className="text-sm text-gray-600">Generalized Anxiety Disorder Scale</p>
+              <p className="text-sm text-gray-600">
+                Generalized Anxiety Disorder Scale
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -213,7 +245,9 @@ export default function UserHomePage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span>Risk Level:</span>
-                  <span className="text-yellow-600 font-medium">Mild Anxiety</span>
+                  <span className="text-yellow-600 font-medium">
+                    Mild Anxiety
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Last Assessment:</span>
@@ -242,11 +276,16 @@ export default function UserHomePage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>GHQ-12 General Health</span>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
                   Good
                 </Badge>
               </CardTitle>
-              <p className="text-sm text-gray-600">General Health Questionnaire</p>
+              <p className="text-sm text-gray-600">
+                General Health Questionnaire
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -299,24 +338,36 @@ export default function UserHomePage() {
                 <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-blue-900">Continue Daily Mindfulness</p>
-                    <p className="text-sm text-blue-700">Your anxiety scores are improving with regular practice</p>
+                    <p className="font-medium text-blue-900">
+                      Continue Daily Mindfulness
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      Your anxiety scores are improving with regular practice
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-green-900">Maintain Sleep Schedule</p>
-                    <p className="text-sm text-green-700">Good sleep hygiene is supporting your mental health</p>
+                    <p className="font-medium text-green-900">
+                      Maintain Sleep Schedule
+                    </p>
+                    <p className="text-sm text-green-700">
+                      Good sleep hygiene is supporting your mental health
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-yellow-900">Consider Stress Management</p>
-                    <p className="text-sm text-yellow-700">Mild anxiety detected - try breathing exercises</p>
+                    <p className="font-medium text-yellow-900">
+                      Consider Stress Management
+                    </p>
+                    <p className="text-sm text-yellow-700">
+                      Mild anxiety detected - try breathing exercises
+                    </p>
                   </div>
                 </div>
               </div>
@@ -328,22 +379,34 @@ export default function UserHomePage() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start bg-transparent" variant="outline">
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+              >
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule Check-in Assessment
               </Button>
 
-              <Button className="w-full justify-start bg-transparent" variant="outline">
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+              >
                 <Heart className="h-4 w-4 mr-2" />
                 Access Wellness Tools
               </Button>
 
-              <Button className="w-full justify-start bg-transparent" variant="outline">
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+              >
                 <TrendingUp className="h-4 w-4 mr-2" />
                 View Progress History
               </Button>
 
-              <Button className="w-full justify-start bg-transparent" variant="outline">
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+              >
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Crisis Support Resources
               </Button>
@@ -355,19 +418,25 @@ export default function UserHomePage() {
         <Card>
           <CardHeader>
             <CardTitle>Assessment History</CardTitle>
-            <p className="text-sm text-gray-600">Track your mental health scores over time</p>
+            <p className="text-sm text-gray-600">
+              Track your mental health scores over time
+            </p>
           </CardHeader>
           <CardContent>
             <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
               <div className="text-center space-y-2">
                 <TrendingUp className="h-12 w-12 text-gray-400 mx-auto" />
-                <p className="text-gray-500">Assessment history chart would appear here</p>
-                <p className="text-sm text-gray-400">Showing trends for PHQ-9, GAD-7, and GHQ-12 scores</p>
+                <p className="text-gray-500">
+                  Assessment history chart would appear here
+                </p>
+                <p className="text-sm text-gray-400">
+                  Showing trends for PHQ-9, GAD-7, and GHQ-12 scores
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

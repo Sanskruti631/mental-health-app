@@ -2,13 +2,13 @@
 import "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, Shield, Clock } from "lucide-react";
+import { MessageCircle, Shield, Clock, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
 export function HeroSection() {
   const { t } = useTranslation();
-  
+
   return (
     <section className="relative py-20 lg:py-32 overflow-hidden">
       {/* Background gradient */}
@@ -29,6 +29,13 @@ export function HeroSection() {
               <Link href="/chat" className="flex items-center space-x-2">
                 <MessageCircle className="h-5 w-5" />
                 <span>{t("startChat")}</span>
+              </Link>
+            </Button>
+
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/quiz" className="flex items-center space-x-2">
+                <ClipboardList className="h-5 w-5" />
+                <span>Take Assessment</span>
               </Link>
             </Button>
 
